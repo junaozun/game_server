@@ -1,36 +1,36 @@
-package net
+package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/jinzhu/gorm"
+	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/server/controller"
 )
 
 type server struct {
 	Addr         string
-	ServerRouter *Router
+	ServerRouter *net.Router
+	DBEngine     *gorm.DB
 }
 
-func NewServer(addr string) *server {
+func NewServer(addr string, db *gorm.DB) *server {
 	return &server{
 		Addr:         addr,
-		ServerRouter: NewRouter(),
+		ServerRouter: net.NewRouter(),
+		DBEngine:     db,
 	}
-}
-
-func (s *server) Router(router *Router) {
-	s.ServerRouter = router
 }
 
 func (s *server) Start() {
 	http.HandleFunc("/", s.wsHandler)
+	log.Printf("logic server start success,listenAddr:%s", s.Addr)
 	err := http.ListenAndServe(s.Addr, nil)
 	if err != nil {
 		log.Fatal("start logic server err", err)
 	}
-	fmt.Println("logic server start success")
 }
 
 var wsUpgreader = websocket.Upgrader{
@@ -49,7 +49,17 @@ func (s *server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	// websocket通道建立之后 不管是客户端还是服务端 都可以收发消息
 	// 发消息的时候把消息当做路由来处理 消息是有格式的 先定义消息的格式
 	// 客户端发消息的时候 {Name:"account.login"} 收到之后进行解析，认为想要处理登录逻辑
-	wsServer := NewWsServer(wsConn)
+	wsServer := net.NewWsServer(wsConn)
 	wsServer.AddRouter(s.ServerRouter)
 	wsServer.Start()
+	// 发送握手协议
+	wsServer.Handshake()
+}
+
+func (s *server) InitTable() {
+	// s.DBEngine.AutoMigrate()
+}
+
+func (s *server) InitRouter() {
+	controller.DefaultAccount.Router()
 }

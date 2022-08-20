@@ -9,7 +9,9 @@ type Router struct {
 }
 
 func NewRouter() *Router {
-	return &Router{}
+	return &Router{
+		group: make(map[string]*group),
+	}
 }
 
 func (r *Router) Group(prefix string) *group {
