@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"io/ioutil"
 
 	"github.com/forgoer/openssl"
+	"golang.org/x/crypto/scrypt"
 )
 
 func AesCBCEncrypt(src, key, iv []byte, padding string) ([]byte, error) {
@@ -67,6 +69,14 @@ func UnZip(data []byte) ([]byte, error) {
 	return unzipData, nil
 }
 
-func Password(pwd string, pwdCode string) string {
-	return Md5(pwd + pwdCode)
+// ScryptPasswd 密码加密
+func ScryptPasswd(password string) string {
+	const keyLen = 10
+	salt := make([]byte, 8)
+	salt = []byte{12, 32, 4, 6, 22, 66, 222, 111}
+	hashPasswd, err := scrypt.Key([]byte(password), salt, 16384, 8, 1, keyLen)
+	if err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(hashPasswd)
 }

@@ -27,7 +27,7 @@ func (r *Router) Group(prefix string) *group {
 
 func (r *Router) Run(req *WsMsgReq, rsp *WsMsgResp) {
 	// req.Body.Name 路径 登录业务 account.login (account 组标识)(login 路由标识)
-	strs := strings.Split(req.Body.Name, ".")
+	strs := strings.Split(req.Body.Router, ".")
 	if len(strs) != 2 {
 		return
 	}

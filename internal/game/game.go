@@ -1,6 +1,9 @@
 package game
 
 import (
+	"log"
+
+	"github.com/junaozun/game_server/internal/model"
 	"github.com/junaozun/game_server/net"
 )
 
@@ -25,7 +28,15 @@ func (g *Game) Init() {
 }
 
 func (g *Game) InitTable() {
-	g.ServerMgr.DBEngine.AutoMigrate()
+	err := g.ServerMgr.DBEngine.AutoMigrate(
+		new(model.User),
+		new(model.LoginHistory),
+		new(model.LoginLast),
+	)
+	if err != nil {
+		log.Printf("[game] initTable err:%s", err.Error())
+		panic(err)
+	}
 }
 
 func (g *Game) InitGame() {

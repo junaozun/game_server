@@ -1,28 +1,24 @@
 package utils
 
 import (
-	"os"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey []byte
+var jwtKey = []byte("873dhc7sfs09d")
 
-func init() {
-	jwtKey = []byte(os.Getenv("JWT_SECRET"))
-}
-
-type Claims struct {
+type MyClaims struct {
 	Uid int
 	jwt.StandardClaims
 }
 
-// 生成Token
-func Award(uid int) (string, error) {
+// SetToken 生成Token
+func SetToken(uid int) (string, error) {
 	// 过期时间 默认7天
 	expireTime := time.Now().Add(7 * 24 * time.Hour)
-	claims := &Claims{
+	claims := &MyClaims{
 		Uid: uid,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
@@ -38,14 +34,17 @@ func Award(uid int) (string, error) {
 	return tokenStr, nil
 }
 
-// 解析token
-func ParseToken(tokenStr string) (*jwt.Token, *Claims, error) {
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+// CheckToken 验证token
+func CheckToken(token string) (*MyClaims, error) {
+	setToken, err := jwt.ParseWithClaims(token, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
-	if err != nil {
-		return nil, nil, err
+	if err != nil || setToken == nil {
+		return nil, err
 	}
-	return token, claims, err
+	if key, _ := setToken.Claims.(*MyClaims); setToken.Valid {
+		return key, nil
+	} else {
+		return nil, fmt.Errorf("setToken.Valid")
+	}
 }

@@ -24,7 +24,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 	server := net.NewServer(host+cfg.Server.Port, db.DB)
 	game.NewGame(server)
 	// 启动服务器

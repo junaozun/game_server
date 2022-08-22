@@ -56,13 +56,13 @@ func (w *wsServer) Addr() string {
 	return w.wsConn.RemoteAddr().String()
 }
 
-func (w *wsServer) Push(name string, data interface{}) {
+func (w *wsServer) Push(router string, data interface{}) {
 	resp := &WsMsgResp{
 		Body: &RespBody{
-			Seq:  0,
-			Name: name,
-			Code: 0,
-			Msg:  data,
+			Seq:    0,
+			Router: router,
+			Code:   0,
+			Msg:    data,
 		},
 	}
 	w.outChan <- resp
@@ -139,8 +139,8 @@ func (w *wsServer) readMsgLoop() {
 		}
 		wsRsp := &WsMsgResp{
 			Body: &RespBody{
-				Seq:  reqBody.Seq,
-				Name: reqBody.Name,
+				Seq:    reqBody.Seq,
+				Router: reqBody.Router,
 			},
 		}
 		//  交给router处理业务
@@ -196,7 +196,7 @@ func (w *wsServer) Handshake() {
 		secretKey = key.(string)
 	}
 	handshake := &Handshake{Key: secretKey}
-	body := &RespBody{Name: HandshakeMsg, Msg: handshake}
+	body := &RespBody{Router: HandshakeMsg, Msg: handshake}
 
 	data, err := json.Marshal(body)
 	if err != nil {

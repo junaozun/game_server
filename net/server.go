@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Server struct {

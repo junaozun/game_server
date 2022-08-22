@@ -1,17 +1,17 @@
 package net
 
 type ReqBody struct {
-	Seq   int64       `json:"seq"`
-	Name  string      `json:"name"`
-	Msg   interface{} `json:"msg"`
-	Proxy string      `json:"proxy"` // 多进程，服务之间调用
+	Seq    int64       `json:"seq"`
+	Router string      `json:"router"` // account.login
+	Msg    interface{} `json:"msg"`
+	Proxy  string      `json:"proxy"` // 多进程，服务之间调用
 }
 
 type RespBody struct {
-	Seq  int64       `json:"seq"`
-	Name string      `json:"name"`
-	Code int         `json:"code"`
-	Msg  interface{} `json:"msg"`
+	Seq    int64       `json:"seq"`
+	Router string      `json:"router"`
+	Code   int         `json:"code"`
+	Msg    interface{} `json:"msg"`
 }
 
 type WsMsgReq struct {
