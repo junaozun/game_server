@@ -1,21 +1,22 @@
-package controller
+package game
 
 import (
+	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/net"
-	"github.com/junaozun/game_server/server/proto"
 )
 
-var DefaultAccount = &Account{}
-
 type Account struct {
+	g *Game
 }
 
-func NewAccount() *Account {
-	return &Account{}
+func NewAccount(g *Game) *Account {
+	return &Account{
+		g: g,
+	}
 }
 
-func (a *Account) Router(router *net.Router) {
-	g := router.Group("account")
+func (a *Account) RegisterRouter() {
+	g := a.g.ServerMgr.ServerRouter.Group("account")
 	g.AddRouter("login", a.login)
 }
 
@@ -28,7 +29,7 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 	// 5. 保存用户的最后一次登录
 	// 6.客户端 需要一个session (JWT生成)
 	rsp.Body.Code = 0
-	loginResp := &proto.LoginRsp{
+	loginResp := &api.LoginRsp{
 		Username: "admin",
 		Session:  "nnnnnn",
 		UId:      1,

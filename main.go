@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 
+	"github.com/junaozun/game_server/internal/game"
+	"github.com/junaozun/game_server/net"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/db"
-	"github.com/junaozun/game_server/server"
 )
 
 var (
@@ -24,11 +25,8 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	server := server.NewServer(host+cfg.Server.Port, db.DB)
-	// 初始化table
-	server.InitTable()
-	// 初始化路由
-	server.InitRouter()
+	server := net.NewServer(host+cfg.Server.Port, db.DB)
+	game.NewGame(server)
 	// 启动服务器
 	server.Start()
 }

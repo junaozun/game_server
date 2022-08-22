@@ -1,4 +1,4 @@
-package proto
+package api
 
 type LoginReq struct {
 	Username string `json:"username"`
