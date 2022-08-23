@@ -1,31 +1,28 @@
 package client_test
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/junaozun/game_server/api"
+	"github.com/junaozun/game_server/net"
+	"github.com/mitchellh/mapstructure"
 )
 
 func TestLogin(t *testing.T) {
-	// req := &net.ReqBody{
-	// 	Seq:  1,
-	// 	Name: "test1",
-	// 	Msg:  "nihao",
-	// }
-	// data, err := json.Marshal(req)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-	// // 对数据加密
-	// encryptData, err := utils.AesCBCEncrypt(data, []byte(net.Kkkk), []byte(net.Kkkk), openssl.ZEROS_PADDING)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-	// // 再对数据进行压缩
-	// zipData, err := utils.Zip(encryptData)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-
+	loginReq := &api.LoginReq{
+		Username: "suxuefeng",
+		Password: "123456",
+		Ip:       "127.0.0.1",
+		Hardware: "mac",
+	}
+	var m map[string]interface{}
+	mapstructure.Decode(loginReq, &m)
+	req := &net.ReqBody{
+		Seq:    1,
+		Router: "account.login",
+		Msg:    m,
+	}
+	res := SendWsData(req)
+	fmt.Println("receive: ", res)
 }

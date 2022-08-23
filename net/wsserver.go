@@ -151,8 +151,6 @@ func (w *wsServer) readMsgLoop() {
 	w.Close()
 }
 
-var Kkkk string
-
 func (w *wsServer) write2Client(resp *WsMsgResp) {
 	data, err := json.Marshal(resp.Body)
 	if err != nil {
@@ -212,5 +210,4 @@ func (w *wsServer) Handshake() {
 	w.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	// 服务器把key设置上
 	w.SetProperty(SecretKey, secretKey)
-	Kkkk = secretKey
 }
