@@ -11,7 +11,7 @@ const (
 
 // LoginHistory 登录历史记录表
 type LoginHistory struct {
-	Id        int       `gorm:"primaryKey;column:id;type:int(10) unsigned;not null"`
+	ID        uint      `gorm:"primarykey"`
 	UId       int       `gorm:"column:uid;type:int(11)"`
 	UserName  string    `gorm:"column:serverId;type:varchar(11)"`
 	LoginTime time.Time `gorm:"column:loginTime;type:datetime"`
@@ -21,7 +21,7 @@ type LoginHistory struct {
 }
 
 type LoginLast struct {
-	Id         int       `gorm:"primaryKey;column:id;type:int(10) unsigned;not null"`
+	ID         uint      `gorm:"primarykey"`
 	UId        int       `gorm:"column:uid;type:int(11)"`
 	LoginTime  time.Time `gorm:"column:loginTime;type:datetime"`
 	LogoutTime time.Time `gorm:"column:logoutTime;type:datetime"`
@@ -31,10 +31,10 @@ type LoginLast struct {
 	Hardware   string    `gorm:"column:hardware;type:varchar(11)"`
 }
 
-// func (*LoginHistory) TableName() string {
-// 	return "login_history"
-// }
-//
-// func (*LoginLast) TableName() string {
-// 	return "login_last"
-// }
+func (*LoginHistory) TableName() string {
+	return "login_history"
+}
+
+func (*LoginLast) TableName() string {
+	return "login_last"
+}
