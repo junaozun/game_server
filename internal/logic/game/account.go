@@ -99,4 +99,6 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 		Hardware:  loginReq.Hardware,
 	})
 	// 缓存一下此用户和当前的ws连接
+	// todo
+	net.NewWsMgr().UserLogin(req.Conn, user.UId, token)
 }
