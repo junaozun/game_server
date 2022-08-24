@@ -5,7 +5,7 @@ import (
 
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
-	"github.com/junaozun/game_server/internal/model"
+	"github.com/junaozun/game_server/internal/logic/model"
 	"github.com/junaozun/game_server/net"
 	"github.com/junaozun/game_server/ret"
 	"github.com/junaozun/game_server/utils"
@@ -14,18 +14,21 @@ import (
 )
 
 type Account struct {
-	g *Game
+	game *Game
 }
 
-func NewAccount(g *Game) *Account {
+func NewAccount(game *Game) *Account {
 	return &Account{
-		g: g,
+		game: game,
 	}
 }
 
-func (a *Account) RegisterRouter() {
-	g := a.g.ServerMgr.ServerRouter.Group("account")
-	g.AddRouter("login", a.login)
+func (a *Account) RegisterRouter() ExecCommand {
+	return ExecCommand{
+		group:    "account",
+		action:   "login",
+		execFunc: a.login,
+	}
 }
 
 func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
@@ -37,7 +40,8 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 	}
 
 	user := &model.User{}
-	err = a.g.ServerMgr.DBEngine.Where(&model.User{Username: loginReq.Username}).Find(user).Error
+	db := a.game.Component.Dao.DB
+	err = db.Where(&model.User{Username: loginReq.Username}).Find(user).Error
 	if err != nil {
 		return
 	}
@@ -75,7 +79,7 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 		State:     model.UserStatus_Login,
 		Hardware:  loginReq.Hardware,
 	}
-	err = a.g.ServerMgr.DBEngine.Create(loginRecord).Error
+	err = db.Create(loginRecord).Error
 	if err != nil {
 		log.Println("[Account] save loginRecord error")
 		return
@@ -83,7 +87,7 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 
 	// 保存用户的最后一次登录
 	// upsert 没有插入，有则更新
-	a.g.ServerMgr.DBEngine.Clauses(clause.OnConflict{
+	db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "uid"}},                                                             //  这里的列必须是唯一的，比如主键或是唯一索引
 		DoUpdates: clause.AssignmentColumns([]string{"login_time", "ip", "session", "is_logout", "hardware"}), // 更新哪些字段
 	}).Create(&model.LoginLast{

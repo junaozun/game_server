@@ -1,15 +1,41 @@
-server:
+logic:
   port: 8003
   debug: true
+  mysql:
+    user: root
+    password: 123456
+    host: 119.45.254.67:3306
+    name: logic_server
 
-db:
-  user: root
-  password: 123456
-  host: 119.45.254.67:3306
-  name: sanguo
+cross:
+  port: 8004
+  debug: true
+  mysql:
+    user: root
+    password: 123456
+    host: 119.45.254.67:3306
+    name: cross_server
+
+pvp:
+  port: 8005
   debug: true
 
-etcd:
-  servers: 119.45.254.67:2379
-  dial_timeout: 5
-  request_timeout: 5
+battle:
+  port: 8006
+  debug: true
+
+common:
+  cluster: dev
+  etcd:
+    servers: 119.45.254.67:2379
+    dial_timeout: 5
+    request_timeout: 5
+  kafka:
+    broker: 10.18.98.163:9092,10.18.98.164:9093,10.18.98.165:9094
+    max_message: 1024
+    frequency: 500
+  nats:
+    server: nats://10.18.98.163:4222,nats://10.18.98.164:4222,nats://10.18.98.165:4222
+    request_timeout: 3
+    reconnect_wait: 1
+    max_reconnects: 2147483647

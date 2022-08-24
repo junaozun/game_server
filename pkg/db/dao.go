@@ -18,7 +18,7 @@ type Dao struct {
 }
 
 // NewDao 构造
-func NewDao(daoConfig config.DBConfig) (*Dao, error) {
+func NewDao(daoConfig *config.MysqlConfig) (*Dao, error) {
 	var err error
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",

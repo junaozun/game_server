@@ -5,20 +5,17 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"gorm.io/gorm"
 )
 
 type Server struct {
 	Addr         string
 	ServerRouter *Router
-	DBEngine     *gorm.DB
 }
 
-func NewServer(addr string, db *gorm.DB) *Server {
+func NewServer(addr string, router *Router) *Server {
 	return &Server{
 		Addr:         addr,
-		ServerRouter: NewRouter(),
-		DBEngine:     db,
+		ServerRouter: router,
 	}
 }
 
