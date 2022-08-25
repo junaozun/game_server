@@ -23,12 +23,12 @@ func NewAccount(game *Game) *Account {
 	}
 }
 
-func (a *Account) RegisterRouter() ExecCommand {
-	return ExecCommand{
+func (a *Account) RegisterRouter(cb func(command ExecCommand)) {
+	cb(ExecCommand{
 		group:    "account",
-		action:   "login",
+		name:     "login",
 		execFunc: a.login,
-	}
+	})
 }
 
 func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
@@ -40,7 +40,7 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 	}
 
 	user := &model.User{}
-	db := a.game.Component.Dao.DB
+	db := a.game.Dao.DB
 	err = db.Where(&model.User{Username: loginReq.Username}).Find(user).Error
 	if err != nil {
 		return
@@ -99,6 +99,5 @@ func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
 		Hardware:  loginReq.Hardware,
 	})
 	// 缓存一下此用户和当前的ws连接
-	// todo
-	net.NewWsMgr().UserLogin(req.Conn, user.UId, token)
+	a.game.UserLogin(req.Conn, user.UId, token)
 }

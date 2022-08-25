@@ -9,17 +9,21 @@ import (
 )
 
 type Game struct {
-	*MgrManager
-	Component *component.Component
-	Router    *net.Router
-	Account   *Account
+	*MgrManager          // mgr管理器
+	*component.Component // 组件
+	*net.Router          // 路由
+	*net.WsMgr           // 在线用户
+	// 系统功能
+	Account *Account
+	// 玩法功能
 }
 
-func NewGame(component *component.Component, router *net.Router) *Game {
+func NewGame(component *component.Component, router *net.Router, onLineUser *net.WsMgr) *Game {
 	g := &Game{
 		MgrManager: NewMgrManager(),
 		Component:  component,
 		Router:     router,
+		WsMgr:      onLineUser,
 	}
 	g.Init()
 	return g
@@ -54,14 +58,14 @@ func (g *Game) initGame() {
 
 func (g *Game) initRouter() {
 	for _, v := range g.Modules {
-		command := v.RegisterRouter()
-		group := g.Router.Group(command.group)
-		group.AddRouter(command.action, command.execFunc)
+		v.RegisterRouter(func(command ExecCommand) {
+			g.Router.Group(command.group).AddRouter(command.name, command.execFunc)
+		})
 	}
 }
 
 type ExecCommand struct {
 	group    string
-	action   string
+	name     string
 	execFunc net.HandlerFunc
 }

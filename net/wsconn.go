@@ -16,14 +16,14 @@ type RespBody struct {
 
 type WsMsgReq struct {
 	Body *ReqBody
-	Conn WsConn
+	Conn IWsConn
 }
 
 type WsMsgResp struct {
 	Body *RespBody
 }
 
-type WsConn interface {
+type IWsConn interface {
 	SetProperty(key string, value interface{})
 	GetProperty(key string) (interface{}, bool)
 	RemoveProperty(key string)

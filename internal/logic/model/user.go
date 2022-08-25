@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/junaozun/game_server/internal/logic"
 	"gorm.io/gorm"
 )
 
@@ -17,5 +18,5 @@ type User struct {
 }
 
 func (*User) TableName() string {
-	return "user"
+	return "user_" + logic.ServerId
 }

@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/junaozun/game_server/internal/logic"
 )
 
 const (
@@ -32,9 +34,9 @@ type LoginLast struct {
 }
 
 func (*LoginHistory) TableName() string {
-	return "login_history"
+	return "login_history_" + logic.ServerId
 }
 
 func (*LoginLast) TableName() string {
-	return "login_last"
+	return "login_last_" + logic.ServerId
 }

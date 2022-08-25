@@ -10,15 +10,19 @@ import (
 	"github.com/junaozun/game_server/pkg/db"
 )
 
+var (
+	ServerId   string
+	ServerPort string
+)
+
 const (
 	host = "0.0.0.0:"
 )
 
 type LogicService struct {
-	serverPort string
-	serverId   string
 	component  *component.Component
 	router     *net.Router
+	onLineUser *net.WsMgr
 	closeChan  chan struct{}
 	fc         chan func()
 }
@@ -32,7 +36,7 @@ func NewLogicService() *LogicService {
 }
 
 func (l *LogicService) ParseFlag(set *flag.FlagSet) {
-	set.StringVar(&l.serverId, "server_id", "", "logic server id")
+	set.StringVar(&ServerId, "server_id", "", "logic server id")
 }
 
 func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
@@ -41,15 +45,16 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 	if err != nil {
 		return err
 	}
-	l.serverPort = cfg.Logic.Port
+	ServerPort = cfg.Logic.Port
 	l.component = component.NewComponent(dao)
 	l.router = net.NewRouter()
-	// 初始化游戏
-	game.NewGame(l.component, l.router)
+	l.onLineUser = net.NewWsMgr()
+	// 初始化游戏玩法
+	game.NewGame(l.component, l.router, l.onLineUser)
 	return nil
 }
 
 func (l *LogicService) Run() {
-	server := net.NewServer(host+l.serverPort, l.router)
+	server := net.NewServer(host+ServerPort, l.router)
 	server.Start()
 }

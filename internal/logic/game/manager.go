@@ -1,7 +1,7 @@
 package game
 
 type IManager interface {
-	RegisterRouter() ExecCommand
+	RegisterRouter(func(command ExecCommand))
 }
 
 type MgrManager struct {

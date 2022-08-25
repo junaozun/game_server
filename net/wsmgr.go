@@ -4,16 +4,16 @@ import "sync"
 
 type WsMgr struct {
 	mu        sync.RWMutex
-	userCache map[int]WsConn // key:uid ;value:用户连接
+	userCache map[int]IWsConn // key:uid ;value:用户连接
 }
 
 func NewWsMgr() *WsMgr {
 	return &WsMgr{
-		userCache: make(map[int]WsConn),
+		userCache: make(map[int]IWsConn),
 	}
 }
 
-func (w *WsMgr) UserLogin(conn WsConn, uid int, token string) {
+func (w *WsMgr) UserLogin(conn IWsConn, uid int, token string) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	oldConn := w.userCache[uid]
