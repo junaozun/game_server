@@ -12,29 +12,32 @@ import (
 type Server struct {
 	*http.Server
 	ServerRouter *Router
-	Shutdown     func(ctx context.Context) error
 }
 
 func NewServer(addr string, router *Router) *Server {
 	return &Server{
-		Server: &http.Server{
-			Addr:    addr,
-			Handler: nil,
-		},
+		Server:       &http.Server{Addr: addr},
 		ServerRouter: router,
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx context.Context) error {
 	http.HandleFunc("/", s.wsHandler)
 	log.Printf("logic server start success,listenAddr:%s", s.Addr)
 	err := s.ListenAndServe()
-	if err != nil {
-		log.Printf("start logic server err:%v", err)
-	}
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
+	return nil
+}
+
+func (s *Server) Stop(ctx context.Context) error {
+	err := s.Shutdown(ctx)
+	if err != nil {
+		log.Println("[httpServer] stop violence.........")
+		return err
+	}
+	log.Println("[httpServer] stop elegant.........")
 	return nil
 }
 

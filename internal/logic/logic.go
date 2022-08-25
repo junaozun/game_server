@@ -3,13 +3,12 @@ package logic
 import (
 	"context"
 	"flag"
-	"log"
-
 	"github.com/junaozun/game_server/internal/logic/component"
 	"github.com/junaozun/game_server/internal/logic/game"
 	"github.com/junaozun/game_server/net"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/db"
+	"log"
 )
 
 var (
@@ -22,10 +21,10 @@ const (
 )
 
 type LogicService struct {
+	wsServer   *net.Server
 	component  *component.Component
 	router     *net.Router
 	onLineUser *net.WsMgr
-	close      func(ctx context.Context) error
 }
 
 func NewLogicService() *LogicService {
@@ -55,18 +54,11 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 
 func (l *LogicService) Start(ctx context.Context) error {
 	log.Println("[LogicService] start........")
-	server := net.NewServer(host+ServerPort, l.router)
-	l.close = server.Shutdown
-	return server.Start()
+	l.wsServer = net.NewServer(host+ServerPort, l.router)
+	return l.wsServer.Start(ctx)
 }
 
 func (l *LogicService) Stop(ctx context.Context) error {
 	log.Println("[LogicService] stop ........")
-	err := l.close(ctx)
-	if err != nil {
-		log.Println("[LogicService] stop violence.........")
-		return err
-	}
-	log.Println("[LogicService] stop elegant.........")
-	return nil
+	return l.wsServer.Stop(ctx)
 }
