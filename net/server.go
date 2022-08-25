@@ -1,6 +1,8 @@
 package net
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 
@@ -8,24 +10,32 @@ import (
 )
 
 type Server struct {
-	Addr         string
+	*http.Server
 	ServerRouter *Router
+	Shutdown     func(ctx context.Context) error
 }
 
 func NewServer(addr string, router *Router) *Server {
 	return &Server{
-		Addr:         addr,
+		Server: &http.Server{
+			Addr:    addr,
+			Handler: nil,
+		},
 		ServerRouter: router,
 	}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() error {
 	http.HandleFunc("/", s.wsHandler)
 	log.Printf("logic server start success,listenAddr:%s", s.Addr)
-	err := http.ListenAndServe(s.Addr, nil)
+	err := s.ListenAndServe()
 	if err != nil {
-		log.Fatal("start logic server err", err)
+		log.Printf("start logic server err:%v", err)
 	}
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
 
 var wsUpgreader = websocket.Upgrader{

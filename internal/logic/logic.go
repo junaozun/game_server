@@ -1,7 +1,9 @@
 package logic
 
 import (
+	"context"
 	"flag"
+	"log"
 
 	"github.com/junaozun/game_server/internal/logic/component"
 	"github.com/junaozun/game_server/internal/logic/game"
@@ -23,15 +25,11 @@ type LogicService struct {
 	component  *component.Component
 	router     *net.Router
 	onLineUser *net.WsMgr
-	closeChan  chan struct{}
-	fc         chan func()
+	close      func(ctx context.Context) error
 }
 
 func NewLogicService() *LogicService {
-	logicService := &LogicService{
-		closeChan: make(chan struct{}),
-		fc:        make(chan func(), 32),
-	}
+	logicService := &LogicService{}
 	return logicService
 }
 
@@ -51,10 +49,24 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 	l.onLineUser = net.NewWsMgr()
 	// 初始化游戏玩法
 	game.NewGame(l.component, l.router, l.onLineUser)
+	log.Println("[LogicService] init successful.....")
 	return nil
 }
 
-func (l *LogicService) Run() {
+func (l *LogicService) Start(ctx context.Context) error {
+	log.Println("[LogicService] start........")
 	server := net.NewServer(host+ServerPort, l.router)
-	server.Start()
+	l.close = server.Shutdown
+	return server.Start()
+}
+
+func (l *LogicService) Stop(ctx context.Context) error {
+	log.Println("[LogicService] stop ........")
+	err := l.close(ctx)
+	if err != nil {
+		log.Println("[LogicService] stop violence.........")
+		return err
+	}
+	log.Println("[LogicService] stop elegant.........")
+	return nil
 }

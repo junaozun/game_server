@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"math/rand"
 	"time"
@@ -10,51 +9,43 @@ import (
 	"github.com/junaozun/game_server/internal/cross"
 	"github.com/junaozun/game_server/internal/logic"
 	"github.com/junaozun/game_server/internal/pvp"
+	"github.com/junaozun/game_server/pkg/app"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"golang.org/x/sync/errgroup"
 )
+
+// Service 接口
+type Service interface {
+	Init(pkgConfig.GameConfig) error
+	ParseFlag(*flag.FlagSet)
+	app.Runner
+}
 
 var (
 	cfgPath = flag.String("config", "game.yaml", "config file path")
 )
 
-// Service 接口
-type Service interface {
-	Init(cfg pkgConfig.GameConfig) error
-	ParseFlag(set *flag.FlagSet)
-	Run()
-}
-
 func main() {
-
 	cfg := pkgConfig.GameConfig{}
 	if err := pkgConfig.LoadConfigFromFile(*cfgPath, &cfg); nil != err {
 		panic(err)
 	}
-
-	var srvs []Service
-	srvs = append(srvs,
-		logic.NewLogicService(),
-		battle.NewBattleService(),
-		cross.NewCrossService(),
-		pvp.NewPvpService(),
-	)
-
-	rand.Seed(time.Now().UnixNano())
-	eg, _ := errgroup.WithContext(context.Background())
-	for _, v := range srvs {
-		srv := v
-		eg.Go(func() error {
-			err := srv.Init(cfg)
-			if err != nil {
-				return err
-			}
-			srv.ParseFlag(flag.CommandLine)
-			srv.Run()
-			return nil
-		})
+	var servers = []Service{logic.NewLogicService(), battle.NewBattleService(), cross.NewCrossService(), pvp.NewPvpService()}
+	runner := make([]app.Runner, 0, len(servers))
+	for _, srv := range servers {
+		srv.ParseFlag(flag.CommandLine)
+		err := srv.Init(cfg)
+		if err != nil {
+			panic(err)
+		}
+		runner = append(runner, srv)
 	}
-	err := eg.Wait()
+	rand.Seed(time.Now().UnixNano())
+	app := app.New(
+		app.Name("sanguo"),
+		app.Version("v1.0"),
+		app.Runners(runner...),
+	)
+	err := app.Run()
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,7 @@
 package pvp
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -19,9 +20,16 @@ func (p PvpService) ParseFlag(set *flag.FlagSet) {
 }
 
 func (p PvpService) Init(cfg pkgConfig.GameConfig) error {
-	log.Println("[PvpService]..................")
+	log.Println("[PvpService] init successful ....")
 	return nil
 }
 
-func (p PvpService) Run() {
+func (p PvpService) Start(ctx context.Context) error {
+	log.Println("[PvpService] start ....")
+	return nil
+}
+
+func (p *PvpService) Stop(ctx context.Context) error {
+	log.Println("[PvpService] stop ....")
+	return nil
 }
