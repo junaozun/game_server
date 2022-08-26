@@ -26,8 +26,11 @@ battle:
 
 common:
   cluster: dev
+  redis:
+    server: 127.0.0.1:6379
+    index: 0
   etcd:
-    servers: 119.45.254.67:2379
+    servers: 127.0.0.1:2379
     dial_timeout: 5
     request_timeout: 5
   kafka:

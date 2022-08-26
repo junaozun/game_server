@@ -9,7 +9,7 @@ import (
 	"github.com/junaozun/game_server/internal/logic/game"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/db"
+	"github.com/junaozun/game_server/pkg/dao"
 	"github.com/junaozun/game_server/pkg/ws"
 )
 
@@ -39,7 +39,7 @@ func (l *LogicService) ParseFlag(set *flag.FlagSet) {
 
 func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 	// 初始化数据访问层
-	dao, err := db.NewDao(cfg.Logic.Mysql)
+	dao, err := dao.NewDao([]interface{}{cfg.Logic.Mysql, cfg.Common.Etcd, cfg.Common.Cache})
 	if err != nil {
 		return err
 	}

@@ -27,6 +27,7 @@ type CommonConfig struct {
 	Etcd    *EtcdConfig  `yaml:"etcd"`
 	NATS    *NatsConfig  `yaml:"nats"`
 	Kafka   *KafkaConfig `yaml:"kafka"`
+	Cache   *RedisConfig `yaml:"redis"`
 }
 
 type EtcdConfig struct {
@@ -46,4 +47,10 @@ type NatsConfig struct {
 	RequestTimeout int32  `yaml:"request_timeout"` // 请求超时（秒）
 	ReconnectWait  int64  `yaml:"reconnect_wait"`  // 重连间隔
 	MaxReconnects  int32  `yaml:"max_reconnects"`  // 重连次数
+}
+
+type RedisConfig struct {
+	Server string `json:"server"`
+	Auth   string `json:"auth"`
+	Index  int    `json:"index"`
 }
