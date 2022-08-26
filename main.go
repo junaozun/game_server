@@ -30,20 +30,20 @@ func main() {
 		panic(err)
 	}
 	var servers = []Service{logic.NewLogicService(), battle.NewBattleService(), cross.NewCrossService(), pvp.NewPvpService()}
-	runner := make([]app.Runner, 0, len(servers))
+	runners := make([]app.Runner, 0, len(servers))
 	for _, srv := range servers {
 		srv.ParseFlag(flag.CommandLine)
 		err := srv.Init(cfg)
 		if err != nil {
 			panic(err)
 		}
-		runner = append(runner, srv)
+		runners = append(runners, srv)
 	}
 	rand.Seed(time.Now().UnixNano())
 	app := app.New(
 		app.Name("sanguo"),
 		app.Version("v1.0"),
-		app.Runners(runner...),
+		app.Runners(runners...),
 	)
 	err := app.Run()
 	if err != nil {

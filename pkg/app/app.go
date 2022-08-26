@@ -26,7 +26,7 @@ type App struct {
 
 func New(opts ...Option) *App {
 	app := &App{
-		sigs:        []os.Signal{syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT},
+		sigs:        []os.Signal{syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGHUP},
 		stopTimeout: time.Second * 30,
 	}
 	for _, opt := range opts {
@@ -65,14 +65,14 @@ func (a *App) Run() error {
 	}
 	wg.Wait()
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, a.sigs...)
+	signalChan := make(chan os.Signal, 2)
+	signal.Notify(signalChan, a.sigs...)
 	eg.Go(func() error {
 		for {
 			select {
 			case <-errCtx.Done():
 				return errCtx.Err()
-			case <-c:
+			case <-signalChan:
 				err := a.Stop()
 				if err != nil {
 					log.Printf("failed to stop app: %v", err)
