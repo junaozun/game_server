@@ -26,3 +26,7 @@ func TestLogin(t *testing.T) {
 	res := SendWsData(req)
 	fmt.Println("receive: ", res)
 }
+
+func TestRegister(t *testing.T) {
+
+}
