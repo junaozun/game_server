@@ -1,19 +1,23 @@
-package net
+package wsMgr
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/junaozun/game_server/pkg/ws"
+)
 
 type WsMgr struct {
 	mu        sync.RWMutex
-	userCache map[int]IWsConn // key:uid ;value:用户连接
+	userCache map[int]ws.IWsConn // key:uid ;value:用户连接
 }
 
 func NewWsMgr() *WsMgr {
 	return &WsMgr{
-		userCache: make(map[int]IWsConn),
+		userCache: make(map[int]ws.IWsConn),
 	}
 }
 
-func (w *WsMgr) UserLogin(conn IWsConn, uid int, token string) {
+func (w *WsMgr) UserLogin(conn ws.IWsConn, uid int, token string) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	oldConn := w.userCache[uid]

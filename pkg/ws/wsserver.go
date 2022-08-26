@@ -1,4 +1,4 @@
-package net
+package ws
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ type wsServer struct {
 	propertyLock sync.RWMutex
 }
 
-func NewWsServer(wsConn *websocket.Conn) *wsServer {
+func newWsServer(wsConn *websocket.Conn) *wsServer {
 	return &wsServer{
 		wsConn:   wsConn,
 		outChan:  make(chan *WsMsgResp, 1000),
@@ -29,7 +29,7 @@ func NewWsServer(wsConn *websocket.Conn) *wsServer {
 	}
 }
 
-func (w *wsServer) AddRouter(router *Router) {
+func (w *wsServer) addRouter(router *Router) {
 	w.router = router
 }
 
@@ -72,7 +72,7 @@ func (w *wsServer) Close() {
 	_ = w.wsConn.Close()
 }
 
-func (w *wsServer) Start() {
+func (w *wsServer) start() {
 	// 启动读写数据的处理逻辑
 	go w.readMsgLoop()
 	go w.writeMsgLoop()
@@ -121,7 +121,7 @@ func (w *wsServer) readMsgLoop() {
 		if err != nil {
 			log.Println("数据格式有误，解密失败：", err)
 			// 出错后发起握手
-			w.Handshake()
+			w.handshake()
 			continue
 		}
 		data = realData
@@ -187,7 +187,7 @@ func (w *wsServer) write2Client(resp *WsMsgResp) {
 // 当游戏客户端 发送请求前先进性一次握手协议、
 // 后端会发送对应的加密key给客户端
 // 客户端在发送数据的时候，就会使用此key进行加密处理
-func (w *wsServer) Handshake() {
+func (w *wsServer) handshake() {
 	secretKey := utils.RandSeq(16)
 	key, ok := w.GetProperty(SecretKey)
 	if ok {

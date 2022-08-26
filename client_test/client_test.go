@@ -8,7 +8,7 @@ import (
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
-	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/utils"
 	"github.com/mitchellh/mapstructure"
 )
@@ -35,13 +35,13 @@ func TestMain(m *testing.M) {
 			log.Println("解压数据出错，非法格式,需要json数据：", err)
 			return
 		}
-		handshake := &net.Handshake{}
-		body := &net.RespBody{}
+		handshake := &ws.Handshake{}
+		body := &ws.RespBody{}
 		err = json.Unmarshal(data, body)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if body.Router == net.HandshakeMsg {
+		if body.Router == ws.HandshakeMsg {
 			err := mapstructure.Decode(body.Msg, handshake)
 			if err != nil {
 				log.Println("Decode err")
@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func SendWsData(req *net.ReqBody) *net.RespBody {
+func SendWsData(req *ws.ReqBody) *ws.RespBody {
 	data, err := json.Marshal(req)
 	if err != nil {
 		log.Println(err)
@@ -93,7 +93,7 @@ func SendWsData(req *net.ReqBody) *net.RespBody {
 		log.Println("数据格式有误，解密失败：", err)
 		return nil
 	}
-	respBody := &net.RespBody{}
+	respBody := &ws.RespBody{}
 	err = json.Unmarshal(realData, respBody)
 	if err != nil {
 		log.Println("数据解析失败", err)

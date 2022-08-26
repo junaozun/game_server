@@ -6,7 +6,7 @@ import (
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
 	"github.com/junaozun/game_server/internal/logic/model"
-	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
 	"github.com/junaozun/game_server/utils"
 	"github.com/mitchellh/mapstructure"
@@ -31,7 +31,7 @@ func (a *Account) RegisterRouter(cb func(command ExecCommand)) {
 	})
 }
 
-func (a *Account) login(req *net.WsMsgReq, rsp *net.WsMsgResp) {
+func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	loginReq := &api.LoginReq{}
 	err := mapstructure.Decode(req.Body.Msg, loginReq)
 	if err != nil {

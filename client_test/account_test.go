@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/junaozun/game_server/api"
-	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -18,7 +18,7 @@ func TestLogin(t *testing.T) {
 	}
 	var m map[string]interface{}
 	mapstructure.Decode(loginReq, &m)
-	req := &net.ReqBody{
+	req := &ws.ReqBody{
 		Seq:    1,
 		Router: "account.login",
 		Msg:    m,

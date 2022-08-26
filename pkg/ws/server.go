@@ -1,4 +1,4 @@
-package net
+package ws
 
 import (
 	"context"
@@ -9,19 +9,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Server struct {
+type WsServer struct {
 	*http.Server
 	ServerRouter *Router
 }
 
-func NewServer(addr string, router *Router) *Server {
-	return &Server{
+func NewWsServer(addr string, router *Router) *WsServer {
+	return &WsServer{
 		Server:       &http.Server{Addr: addr},
 		ServerRouter: router,
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *WsServer) Start(ctx context.Context) error {
 	http.HandleFunc("/", s.wsHandler)
 	log.Printf("logic server start success,listenAddr:%s", s.Addr)
 	err := s.ListenAndServe()
@@ -31,13 +31,13 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) Stop(ctx context.Context) error {
+func (s *WsServer) Stop(ctx context.Context) error {
 	err := s.Shutdown(ctx)
 	if err != nil {
-		log.Println("[httpServer] stop violence.........")
+		log.Println("[WsServer] stop violence.........")
 		return err
 	}
-	log.Println("[httpServer] stop elegant.........")
+	log.Println("[WsServer] stop elegant.........")
 	return nil
 }
 
@@ -48,7 +48,7 @@ var wsUpgreader = websocket.Upgrader{
 	},
 }
 
-func (s *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
+func (s *WsServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	// 将http协议升级websocket
 	wsConn, err := wsUpgreader.Upgrade(w, r, nil)
 	if err != nil {
@@ -57,9 +57,9 @@ func (s *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	// websocket通道建立之后 不管是客户端还是服务端 都可以收发消息
 	// 发消息的时候把消息当做路由来处理 消息是有格式的 先定义消息的格式
 	// 客户端发消息的时候 {Name:"account.login"} 收到之后进行解析，认为想要处理登录逻辑
-	wsServer := NewWsServer(wsConn)
-	wsServer.AddRouter(s.ServerRouter)
-	wsServer.Start()
+	wsServer := newWsServer(wsConn)
+	wsServer.addRouter(s.ServerRouter)
+	wsServer.start()
 	// 发送握手协议
-	wsServer.Handshake()
+	wsServer.handshake()
 }

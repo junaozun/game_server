@@ -1,4 +1,4 @@
-package net
+package ws
 
 type ReqBody struct {
 	Seq    int64       `json:"seq"`

@@ -3,12 +3,14 @@ package logic
 import (
 	"context"
 	"flag"
+	"log"
+
 	"github.com/junaozun/game_server/internal/logic/component"
 	"github.com/junaozun/game_server/internal/logic/game"
-	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/internal/logic/wsMgr"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/db"
-	"log"
+	"github.com/junaozun/game_server/pkg/ws"
 )
 
 var (
@@ -21,10 +23,9 @@ const (
 )
 
 type LogicService struct {
-	wsServer   *net.Server
+	wsServer   *ws.WsServer
 	component  *component.Component
-	router     *net.Router
-	onLineUser *net.WsMgr
+	onLineUser *wsMgr.WsMgr
 }
 
 func NewLogicService() *LogicService {
@@ -43,18 +44,17 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 		return err
 	}
 	ServerPort = cfg.Logic.Port
+	l.wsServer = ws.NewWsServer(host+ServerPort, ws.NewRouter())
 	l.component = component.NewComponent(dao)
-	l.router = net.NewRouter()
-	l.onLineUser = net.NewWsMgr()
+	l.onLineUser = wsMgr.NewWsMgr()
 	// 初始化游戏玩法
-	game.NewGame(l.component, l.router, l.onLineUser)
+	game.NewGame(l.component, l.wsServer.ServerRouter, l.onLineUser)
 	log.Println("[LogicService] init successful.....")
 	return nil
 }
 
 func (l *LogicService) Start(ctx context.Context) error {
 	log.Println("[LogicService] start........")
-	l.wsServer = net.NewServer(host+ServerPort, l.router)
 	return l.wsServer.Start(ctx)
 }
 

@@ -5,20 +5,21 @@ import (
 
 	"github.com/junaozun/game_server/internal/logic/component"
 	"github.com/junaozun/game_server/internal/logic/model"
-	"github.com/junaozun/game_server/net"
+	"github.com/junaozun/game_server/internal/logic/wsMgr"
+	"github.com/junaozun/game_server/pkg/ws"
 )
 
 type Game struct {
 	*MgrManager          // mgr管理器
 	*component.Component // 组件
-	*net.Router          // 路由
-	*net.WsMgr           // 在线用户
+	*ws.Router           // 路由
+	*wsMgr.WsMgr         // 在线用户
 	// 系统功能
 	Account *Account
 	// 玩法功能
 }
 
-func NewGame(component *component.Component, router *net.Router, onLineUser *net.WsMgr) *Game {
+func NewGame(component *component.Component, router *ws.Router, onLineUser *wsMgr.WsMgr) *Game {
 	g := &Game{
 		MgrManager: NewMgrManager(),
 		Component:  component,
@@ -67,5 +68,5 @@ func (g *Game) initRouter() {
 type ExecCommand struct {
 	group    string
 	name     string
-	execFunc net.HandlerFunc
+	execFunc ws.HandlerFunc
 }
