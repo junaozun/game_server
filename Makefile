@@ -10,3 +10,6 @@ mac:
 
 vendor:
 	export GOPROXY=https://goproxy.io,direct && go mod tidy && go mod vendor
+
+gen_table:
+	sh table/gen_table/gen_table.sh
