@@ -23,7 +23,6 @@ func NewWsServer(addr string, router *Router) *WsServer {
 
 func (s *WsServer) Start(ctx context.Context) error {
 	http.HandleFunc("/", s.wsHandler)
-	log.Printf("logic server start success,listenAddr:%s", s.Addr)
 	err := s.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
@@ -32,13 +31,7 @@ func (s *WsServer) Start(ctx context.Context) error {
 }
 
 func (s *WsServer) Stop(ctx context.Context) error {
-	err := s.Shutdown(ctx)
-	if err != nil {
-		log.Println("[WsServer] stop violence.........")
-		return err
-	}
-	log.Println("[WsServer] stop elegant.........")
-	return nil
+	return s.Shutdown(ctx)
 }
 
 var wsUpgreader = websocket.Upgrader{

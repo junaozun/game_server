@@ -29,7 +29,9 @@ type LogicService struct {
 }
 
 func NewLogicService() *LogicService {
-	logicService := &LogicService{}
+	logicService := &LogicService{
+		onLineUser: wsMgr.NewWsMgr(),
+	}
 	return logicService
 }
 
@@ -46,7 +48,6 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 	ServerPort = cfg.Logic.Port
 	l.wsServer = ws.NewWsServer(host+ServerPort, ws.NewRouter())
 	l.component = component.NewComponent(dao)
-	l.onLineUser = wsMgr.NewWsMgr()
 	// 初始化游戏玩法
 	game.NewGame(l.component, l.wsServer.ServerRouter, l.onLineUser)
 	log.Println("[LogicService] init successful.....")
@@ -54,11 +55,11 @@ func (l *LogicService) Init(cfg pkgConfig.GameConfig) error {
 }
 
 func (l *LogicService) Start(ctx context.Context) error {
-	log.Println("[LogicService] start........")
+	log.Printf("[LogicService] addr:%s,start........", host+ServerPort)
 	return l.wsServer.Start(ctx)
 }
 
 func (l *LogicService) Stop(ctx context.Context) error {
-	log.Println("[LogicService] stop ........")
+	log.Printf("[LogicService] addr:%s stop ........", host+ServerPort)
 	return l.wsServer.Stop(ctx)
 }

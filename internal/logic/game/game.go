@@ -6,6 +6,7 @@ import (
 	"github.com/junaozun/game_server/internal/logic/component"
 	"github.com/junaozun/game_server/internal/logic/model"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
+	model2 "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/ws"
 )
 
@@ -38,7 +39,7 @@ func (g *Game) Init() {
 
 func (g *Game) initTable() {
 	err := g.Component.Dao.DB.AutoMigrate(
-		new(model.User),
+		new(model2.User),
 		new(model.LoginHistory),
 		new(model.LoginLast),
 	)

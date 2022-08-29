@@ -24,6 +24,10 @@ battle:
   port: 8006
   debug: true
 
+web:
+  port: 8080
+  debug: true
+
 common:
   cluster: dev
   redis:

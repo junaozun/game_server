@@ -6,6 +6,7 @@ import (
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
 	"github.com/junaozun/game_server/internal/logic/model"
+	model2 "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
 	"github.com/junaozun/game_server/utils"
@@ -39,9 +40,9 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 
-	user := &model.User{}
+	user := &model2.User{}
 	db := a.game.Dao.DB
-	err = db.Where(&model.User{Username: loginReq.Username}).Find(user).Error
+	err = db.Where(&model2.User{Username: loginReq.Username}).Find(user).Error
 	if err != nil {
 		return
 	}
