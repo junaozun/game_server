@@ -19,6 +19,7 @@ type App struct {
 	ctxCancel   func()
 	name        string
 	version     string
+	onExitHook  func()
 	stopTimeout time.Duration
 	sigs        []os.Signal
 	runners     []Runner
@@ -45,6 +46,9 @@ func (a *App) Version() string {
 }
 
 func (a *App) Run() error {
+	if a.onExitHook != nil {
+		defer a.onExitHook()
+	}
 	eg, errCtx := errgroup.WithContext(a.ctx)
 	wg := sync.WaitGroup{}
 	for _, v := range a.runners {

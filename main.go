@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"math/rand"
 	"time"
 
@@ -45,6 +46,9 @@ func main() {
 	app := app.New(
 		app.Name("sanguo"),
 		app.Version("v1.0"),
+		app.OnExitHook(func() {
+			log.Println("app exit")
+		}),
 		app.Runners(runners...),
 	)
 	if err := app.Run(); err != nil {

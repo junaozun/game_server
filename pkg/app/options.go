@@ -18,6 +18,11 @@ func Name(name string) Option {
 	}
 }
 
+// OnExitHook 全部退出钩子函数
+func OnExitHook(hook func()) Option {
+	return func(o *App) { o.onExitHook = hook }
+}
+
 func Version(version string) Option {
 	return func(o *App) {
 		o.version = version
