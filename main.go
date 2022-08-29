@@ -40,7 +40,7 @@ func main() {
 		}
 		runners = append(runners, srv)
 	}
-	runners = append(runners, web.NewWebServiceWithConfig(cfg.Web))
+	runners = append(runners, web.NewHttpServiceWithConfig(cfg.Web, cfg.Common))
 	rand.Seed(time.Now().UnixNano())
 	app := app.New(
 		app.Name("sanguo"),

@@ -9,7 +9,6 @@ import (
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
 	"github.com/junaozun/game_server/pkg/ws"
-	"github.com/junaozun/game_server/utils"
 	"github.com/mitchellh/mapstructure"
 )
 

@@ -5,8 +5,8 @@ package table
 import (
 	"errors"
 	"reflect"
+
 	"github.com/junaozun/game_server/pkg/csvloader"
-	"github.com/junaozun/game_server/pkg/util"
 )
 
 // PowerDataTable 表格
@@ -39,7 +39,7 @@ func (table *PowerDataTable) load(filepath string) error {
 		table.DataMap[v.ID] = v
 	}
 
-	table.md5,_ = GetFileMD5(filepath)
+	table.md5, _ = GetFileMD5(filepath)
 
 	return nil
 }
@@ -47,22 +47,22 @@ func (table *PowerDataTable) load(filepath string) error {
 // reload 重新表格
 // 重新加载不会做减量，只做增量和改变
 func (table *PowerDataTable) reload(filepath string) (bool, error) {
-    //中间处理不可预料得错误一定要恢复回来
-    defer func() {
-        if err := recover(); nil != err {
-           // util.LOG.Criticalf("PowerDataTable.reload] %v %s", err, debug.Stack())
-        }
-    }()
+	//中间处理不可预料得错误一定要恢复回来
+	defer func() {
+		if err := recover(); nil != err {
+			// util.LOG.Criticalf("PowerDataTable.reload] %v %s", err, debug.Stack())
+		}
+	}()
 
-    // 计算MD5
-    md5, err := GetFileMD5(filepath)
-    if nil != err {
-        return false, err
-    }
+	// 计算MD5
+	md5, err := GetFileMD5(filepath)
+	if nil != err {
+		return false, err
+	}
 
 	//检查是否需要reload
-	if md5 == table.md5{
-        return false, nil
+	if md5 == table.md5 {
+		return false, nil
 	}
 
 	tData, err := csvloader.LoadCSVConfig(filepath, reflect.TypeOf(PowerData{}))
@@ -82,14 +82,14 @@ func (table *PowerDataTable) reload(filepath string) (bool, error) {
 	for _, v := range typeData {
 		//已有的要修改值，新增得直接增加
 		if data, ok := table.DataMap[v.ID]; ok {
-			util.DeepCopy(data, v)
+			utils.DeepCopy(data, v)
 		} else {
 			table.DataMap[v.ID] = v
 			table.Data = append(table.Data, v)
 		}
 	}
 
-    table.md5 = md5
+	table.md5 = md5
 
 	return true, nil
 }
@@ -109,7 +109,7 @@ func (table *PowerDataTable) GetByID(val int64) *PowerData {
 func (table *PowerDataTable) GetCloneByID(val int64) *PowerData {
 	v := table.DataMap[val]
 	out := &PowerData{}
-	util.DeepCopy(out, v)
+	utils.DeepCopy(out, v)
 	return out
 }
 

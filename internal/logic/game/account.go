@@ -6,10 +6,10 @@ import (
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
 	"github.com/junaozun/game_server/internal/logic/model"
-	model2 "github.com/junaozun/game_server/model"
+	common_model "github.com/junaozun/game_server/model"
+	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
-	"github.com/junaozun/game_server/utils"
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm/clause"
 )
@@ -40,9 +40,9 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 
-	user := &model2.User{}
+	user := &common_model.User{}
 	db := a.game.Dao.DB
-	err = db.Where(&model2.User{Username: loginReq.Username}).Find(user).Error
+	err = db.Where(&common_model.User{Username: loginReq.Username}).Find(user).Error
 	if err != nil {
 		return
 	}

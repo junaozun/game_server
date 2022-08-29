@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/junaozun/game_server/internal/logic/component"
+	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/logic/game"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"

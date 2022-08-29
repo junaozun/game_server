@@ -7,7 +7,7 @@ import (
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
-	"github.com/junaozun/game_server/utils"
+	"github.com/junaozun/game_server/pkg/utils"
 )
 
 const SecretKey = "secretKey"

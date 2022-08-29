@@ -3,7 +3,7 @@ package game
 import (
 	"log"
 
-	"github.com/junaozun/game_server/internal/logic/component"
+	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/logic/model"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
 	model2 "github.com/junaozun/game_server/model"
@@ -32,7 +32,7 @@ func NewGame(component *component.Component, router *ws.Router, onLineUser *wsMg
 }
 
 func (g *Game) Init() {
-	// g.initTable()
+	g.initTable()
 	g.initGame()
 	g.initRouter()
 }

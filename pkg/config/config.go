@@ -6,7 +6,7 @@ type GameConfig struct {
 	Cross  *ServerConfig `yaml:"cross"`
 	Pvp    *ServerConfig `yaml:"pvp"`
 	Battle *ServerConfig `yaml:"battle"`
-	Web    *WebConfig    `yaml:"web"`
+	Web    *ServerConfig `yaml:"web"`
 	Common *CommonConfig `yaml:"common"`
 }
 
@@ -14,11 +14,6 @@ type ServerConfig struct {
 	Port  string       `yaml:"port"`
 	Debug bool         `yaml:"debug"`
 	Mysql *MysqlConfig `yaml:"mysql"`
-}
-
-type WebConfig struct {
-	Port  string `yaml:"port"`
-	Debug bool   `yaml:"debug"`
 }
 
 type MysqlConfig struct {
