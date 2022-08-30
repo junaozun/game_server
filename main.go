@@ -2,7 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"math/rand"
+	"net/http"
+	_ "net/http/pprof"
+	"runtime"
 	"time"
 
 	"github.com/junaozun/game_server/internal/battle"
@@ -19,6 +23,16 @@ var (
 )
 
 func main() {
+	go func() {
+		for {
+			time.Sleep(time.Second * 3)
+			fmt.Printf("协程数量%d", runtime.NumGoroutine())
+		}
+	}()
+	go func() {
+		fmt.Println("pprof start...")
+		fmt.Println(http.ListenAndServe(":9876", nil))
+	}()
 	cfg := pkgConfig.GameConfig{}
 	if err := pkgConfig.LoadConfigFromFile(*cfgPath, &cfg); nil != err {
 		panic(err)

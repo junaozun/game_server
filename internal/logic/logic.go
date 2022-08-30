@@ -23,7 +23,6 @@ const (
 )
 
 type LogicApp struct {
-	component  *component.Component
 	onLineUser *wsMgr.WsMgr
 }
 
@@ -39,10 +38,9 @@ func (l *LogicApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
 	if err != nil {
 		return err
 	}
-	l.component = component.NewComponent(dao)
 	wsServer := ws.NewWsServer(host+cfg.Logic.Port, ws.NewRouter())
 	// 初始化游戏玩法
-	game.NewGame(l.component, wsServer.ServerRouter, l.onLineUser)
+	game.NewGame(component.NewComponent(dao), wsServer.ServerRouter, l.onLineUser)
 
 	logic := app.New(
 		app.OnBeginHook(func() {
