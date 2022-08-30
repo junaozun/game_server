@@ -86,7 +86,7 @@ func (a *App) Run() error {
 					log.Printf("failed to stop app: %v", err)
 					return err
 				}
-				log.Println("app run interrupt.....")
+				log.Printf("%sApp run interrupt.....", a.Name())
 			}
 		}
 	})
