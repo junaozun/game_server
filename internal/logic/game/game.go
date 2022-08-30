@@ -32,7 +32,7 @@ func NewGame(component *component.Component, router *ws.Router, onLineUser *wsMg
 }
 
 func (g *Game) Init() {
-	g.initTable()
+	// g.initTable()
 	g.initGame()
 	g.initRouter()
 }

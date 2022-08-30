@@ -2,34 +2,32 @@ package battle
 
 import (
 	"context"
-	"flag"
 	"log"
 
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
+	"github.com/junaozun/game_server/pkg/app"
+	"github.com/junaozun/game_server/pkg/config"
 )
 
-type BattleService struct {
+type BattleApp struct {
 }
 
-func NewBattleService() *BattleService {
-	battleService := &BattleService{}
-	return battleService
+func NewBattleApp() *BattleApp {
+	return &BattleApp{}
 }
 
-func (b *BattleService) ParseFlag(set *flag.FlagSet) {
-}
-
-func (b *BattleService) Init(cfg pkgConfig.GameConfig) error {
-	log.Println("[battleService] init successful ......")
-	return nil
-}
-
-func (b *BattleService) Start(ctx context.Context) error {
-	log.Println("[battleService] start .......")
-	return nil
-}
-
-func (c *BattleService) Stop(ctx context.Context) error {
-	log.Println("[battleService] stop .......")
+func (b *BattleApp) Run(ctx context.Context, cfg config.GameConfig) error {
+	runners := make([]app.Runner, 0)
+	cross := app.New(
+		app.OnBeginHook(func() {
+			log.Println("battle app start....")
+		}),
+		app.OnExitHook(func() {
+			log.Println("battle app exit....")
+		}),
+		app.Runners(runners...),
+	)
+	if err := cross.Run(); err != nil {
+		return err
+	}
 	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"math/rand"
 	"time"
 
@@ -15,13 +14,6 @@ import (
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 )
 
-// Service 接口
-type Service interface {
-	Init(pkgConfig.GameConfig) error
-	ParseFlag(*flag.FlagSet)
-	app.Runner
-}
-
 var (
 	cfgPath = flag.String("config", "game.yaml", "config file path")
 )
@@ -31,27 +23,8 @@ func main() {
 	if err := pkgConfig.LoadConfigFromFile(*cfgPath, &cfg); nil != err {
 		panic(err)
 	}
-	var servers = []Service{logic.NewLogicService(), battle.NewBattleService(), cross.NewCrossService(), pvp.NewPvpService()}
-	runners := make([]app.Runner, 0, len(servers))
-	for _, srv := range servers {
-		srv.ParseFlag(flag.CommandLine)
-		err := srv.Init(cfg)
-		if err != nil {
-			panic(err)
-		}
-		runners = append(runners, srv)
-	}
-	runners = append(runners, web.NewHttpServiceWithConfig(cfg.Web, cfg.Common))
 	rand.Seed(time.Now().UnixNano())
-	app := app.New(
-		app.Name("sanguo"),
-		app.Version("v1.0"),
-		app.OnExitHook(func() {
-			log.Println("app exit")
-		}),
-		app.Runners(runners...),
-	)
-	if err := app.Run(); err != nil {
-		panic(err)
-	}
+	var apps = []app.IApp{logic.NewLogicApp(), battle.NewBattleApp(), cross.NewCrossApp(), pvp.NewPvpApp(), web.NewWebApp(cfg)}
+	appMgr := app.NewAppMgr(apps...)
+	appMgr.Runs(cfg)
 }

@@ -23,6 +23,11 @@ func OnExitHook(hook func()) Option {
 	return func(o *App) { o.onExitHook = hook }
 }
 
+// OnBeginHook 开始执行钩子函数
+func OnBeginHook(hook func()) Option {
+	return func(o *App) { o.onBeginHook = hook }
+}
+
 func Version(version string) Option {
 	return func(o *App) {
 		o.version = version

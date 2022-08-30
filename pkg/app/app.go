@@ -13,13 +13,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// App 应用
+// App 应用实例
 type App struct {
 	ctx         context.Context
 	ctxCancel   func()
 	name        string
 	version     string
 	onExitHook  func()
+	onBeginHook func()
 	stopTimeout time.Duration
 	sigs        []os.Signal
 	runners     []Runner
@@ -48,6 +49,9 @@ func (a *App) Version() string {
 func (a *App) Run() error {
 	if a.onExitHook != nil {
 		defer a.onExitHook()
+	}
+	if a.onBeginHook != nil {
+		a.onBeginHook()
 	}
 	eg, errCtx := errgroup.WithContext(a.ctx)
 	wg := sync.WaitGroup{}

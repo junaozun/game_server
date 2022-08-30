@@ -3,7 +3,6 @@ package httpx
 import (
 	"context"
 	"errors"
-	"log"
 	"net"
 	"net/http"
 
@@ -68,6 +67,7 @@ func New(handler func(engine *gin.Engine), opts ...ServerOption) (*HttpxServer, 
 	handler(router)
 	h := &HttpxServer{
 		Server: &http.Server{
+			Addr:    opt.Address,
 			Handler: router,
 		},
 		opt: opt,
@@ -78,7 +78,6 @@ func New(handler func(engine *gin.Engine), opts ...ServerOption) (*HttpxServer, 
 
 // Start 运行
 func (h *HttpxServer) Start(ctx context.Context) error {
-	log.Printf("[HttpxServer] addr:%s,start .....", h.opt.Address)
 	h.Server.BaseContext = func(listener net.Listener) context.Context {
 		return ctx
 	}
@@ -95,6 +94,5 @@ func (h *HttpxServer) Start(ctx context.Context) error {
 
 // Stop 停止
 func (h *HttpxServer) Stop(ctx context.Context) error {
-	log.Printf("[HttpxServer] addr:%s,Stop .....", h.opt.Address)
 	return h.Shutdown(ctx)
 }
