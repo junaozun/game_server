@@ -25,6 +25,7 @@ func (b *BattleApp) Run(ctx context.Context, cfg config.GameConfig) error {
 			log.Println("battle app exit....")
 		}),
 		app.Runners(runners...),
+		app.Name("battle"),
 	)
 	if err := cross.Run(); err != nil {
 		return err

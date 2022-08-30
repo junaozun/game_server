@@ -38,6 +38,7 @@ func (w *WebApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
 		app.OnExitHook(func() {
 			log.Printf("web app exit addr:%s ....", w.httpxServer.Addr)
 		}),
+		app.Name("web"),
 		app.Runners(w.httpxServer),
 	)
 	if err := web.Run(); err != nil {

@@ -27,6 +27,7 @@ func (c *CrossApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
 		app.OnExitHook(func() {
 			log.Println("cross app exit....")
 		}),
+		app.Name("cross"),
 		app.Runners(runners...),
 	)
 	if err := cross.Run(); err != nil {

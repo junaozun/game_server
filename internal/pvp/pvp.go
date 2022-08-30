@@ -24,6 +24,7 @@ func (p *PvpApp) Run(ctx context.Context, cfg config.GameConfig) error {
 		app.OnExitHook(func() {
 			log.Println("pvp app exit....")
 		}),
+		app.Name("pvp"),
 		app.Runners(runners...),
 	)
 	if err := pvp.Run(); err != nil {
