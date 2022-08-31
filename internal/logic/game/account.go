@@ -48,13 +48,13 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	}
 
 	if user.UId == 0 { // 用户不存在
-		rsp.Body.Code = ret.Err_UserNotFound
+		rsp.Body.Code = ret.Err_UserNotFound.Code
 		return
 	}
 
 	// 检查密码
 	if utils.ScryptPasswd(loginReq.Password) != user.Passwd {
-		rsp.Body.Code = ret.Err_PasswdNotRight
+		rsp.Body.Code = ret.Err_PasswdNotRight.Code
 		return
 	}
 
@@ -63,7 +63,7 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 
-	rsp.Body.Code = ret.Ok
+	rsp.Body.Code = ret.OK.Code
 	loginResp := &api.LoginRsp{
 		Username: user.Username,
 		Session:  token,

@@ -9,6 +9,7 @@ import (
 	common_model "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/dao"
 	"github.com/junaozun/game_server/pkg/utils"
+	"github.com/junaozun/game_server/ret"
 )
 
 type RegisterAccount struct {
@@ -24,29 +25,17 @@ func NewAccount(dao *dao.Dao) *RegisterAccount {
 func (ctl *RegisterAccount) Register(c *gin.Context) {
 	req := api.RegisterReq{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusInternalServerError, &RET{
-			Code: -1,
-			Msg:  "shouldBind err",
-			Data: nil,
-		})
+		c.JSON(http.StatusOK, ret.Err_Param)
 		return
 	}
 	user := &common_model.User{}
 	err := ctl.Dao.DB.Where(&common_model.User{Username: req.Username}).Limit(1).Find(user).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &RET{
-			Code: -2,
-			Msg:  "db err",
-			Data: nil,
-		})
+		c.JSON(http.StatusOK, ret.Err_DB)
 		return
 	}
 	if user.UId != 0 {
-		c.JSON(http.StatusInternalServerError, &RET{
-			Code: -3,
-			Msg:  "用户名已存在",
-			Data: nil,
-		})
+		c.JSON(http.StatusOK, ret.Err_UserExist)
 		return
 	}
 	dbUser := &common_model.User{
@@ -60,18 +49,10 @@ func (ctl *RegisterAccount) Register(c *gin.Context) {
 	}
 	err = ctl.Dao.DB.Create(dbUser).Error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, &RET{
-			Code: -4,
-			Msg:  "insert user err",
-			Data: nil,
-		})
+		c.JSON(http.StatusOK, ret.Err_DB)
 		return
 	}
-	c.JSON(http.StatusOK, &RET{
-		Code: 0,
-		Msg:  "success",
-		Data: nil,
-	})
+	c.JSON(http.StatusOK, ret.OK)
 }
 
 type RET struct {
