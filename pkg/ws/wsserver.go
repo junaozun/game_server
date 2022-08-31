@@ -19,6 +19,7 @@ type wsServer struct {
 	seq          int64
 	property     map[string]interface{} //
 	propertyLock sync.RWMutex
+	close        chan struct{}
 }
 
 func newWsServer(wsConn *websocket.Conn) *wsServer {
@@ -26,6 +27,7 @@ func newWsServer(wsConn *websocket.Conn) *wsServer {
 		wsConn:   wsConn,
 		outChan:  make(chan *WsMsgResp, 1000),
 		property: make(map[string]interface{}),
+		close:    make(chan struct{}),
 	}
 }
 
@@ -69,6 +71,7 @@ func (w *wsServer) Push(router string, data interface{}) {
 }
 
 func (w *wsServer) Close() {
+	w.close <- struct{}{}
 	_ = w.wsConn.Close()
 }
 
@@ -83,6 +86,8 @@ func (w *wsServer) writeMsgLoop() {
 		select {
 		case wsResp := <-w.outChan:
 			w.write2Client(wsResp)
+		case <-w.close:
+			return
 		}
 	}
 }
@@ -91,7 +96,7 @@ func (w *wsServer) readMsgLoop() {
 	defer func() {
 		if err := recover(); err != nil {
 			w.Close()
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}()
 

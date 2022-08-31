@@ -6,6 +6,16 @@ import (
 )
 
 func TestNameFindTest(t *testing.T) {
-	res := FindName([]string{"sunihao", "nihaoyy", "zheshini", "haozai"}, "nihao")
+	m := &NameFinder{
+		NamePool: nil,
+	}
+	res := m.FindName("nihao")
 	fmt.Println(res)
+}
+
+func BenchmarkKmp(b *testing.B) {
+
+	for i := 0; i < b.N; i++ {
+
+	}
 }
