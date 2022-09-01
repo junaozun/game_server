@@ -1,0 +1,43 @@
+package account
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/junaozun/game_server/api"
+	"github.com/junaozun/game_server/global"
+	"github.com/junaozun/game_server/internal/web/service"
+	common_model "github.com/junaozun/game_server/model"
+	"github.com/junaozun/game_server/pkg/utils"
+	"github.com/junaozun/game_server/ret"
+)
+
+type AccountCtl struct {
+	Service *service.AccountService
+}
+
+func NewAccountCtl(accountService *service.AccountService) *AccountCtl {
+	return &AccountCtl{
+		Service: accountService,
+	}
+}
+
+func (ctl *AccountCtl) Register(c *gin.Context) {
+	ctx := c.Request.Context()
+	req := api.RegisterReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusOK, ret.Err_Param)
+		return
+	}
+	dbUser := &common_model.User{
+		CreateTime: global.Now(),
+		UId:        1,
+		Username:   req.Username,
+		Passwd:     utils.ScryptPasswd(req.Password),
+		Hardware:   req.Hardware,
+		Status:     0,
+		IsOnline:   false,
+	}
+	errno := ctl.Service.AddAccount(ctx, dbUser)
+	c.JSON(http.StatusOK, errno)
+}
