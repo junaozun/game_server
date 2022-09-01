@@ -13,3 +13,6 @@ vendor:
 
 gen_table:
 	sh table/gen_table/gen_table.sh
+
+wire:
+	wire ./internal/web/wire/
