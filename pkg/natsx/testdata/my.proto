@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package testdata;
+
+message TestMine {
+  int64 Id = 1;
+  string Name = 2;
+  string Sex = 3;
+}
+
+message TestMineResp {
+  int64 Id = 1;
+  string brother = 2;
+  repeated int64  childs = 3;
+}
