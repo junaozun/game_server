@@ -8,36 +8,22 @@ import (
 	"github.com/junaozun/game_server/pkg/natsx/testdata"
 )
 
-type BenchNotifyService struct {
+type TestReqServer struct {
+	total int32
 }
 
-func (a *BenchNotifyService) Notify(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BenchNotifyService Notify success")
+func (a *TestReqServer) AddTestMine(ctx context.Context, req *testdata.TestMine) (*testdata.TestMineResp, error) {
+	a.total++
+	fmt.Println(a.total)
+	repl := &testdata.TestMineResp{
+		Id:      req.Id + req.Id,
+		Brother: "sister",
+		Childs:  []int64{1, 2, 3, 4, 5, 6},
+	}
+	return repl, nil
 }
 
-func (a *BenchNotifyService) Test(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BenchNotifyService Test success")
-}
-
-type BeginTime struct {
-}
-
-func (a *BeginTime) Calculate(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BeginTime Calculate success")
-}
-
-func (a *BeginTime) BeginEnd(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BeginTime BeginEnd success")
-}
-
-type Logic struct {
-}
-
-func (l *Logic) Suxuefeng(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("Logic Suxuefeng success")
-}
-
-func TestServer(t *testing.T) {
+func TestStartServer(t *testing.T) {
 	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
@@ -48,34 +34,32 @@ func TestServer(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = server.Register("chess", &BenchNotifyService{})
-	err = server.Register("chess", &BeginTime{})
-	err = server.Register("logic", &Logic{})
+	err = server.Register("sanguo", &TestReqServer{})
 	for {
 
 	}
 }
 
-func TestClient(t *testing.T) {
+func TestStartClient(t *testing.T) {
 	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	chessClient, err := NewClient(connEnc, "chess")
+	chessClient, err := NewClient(connEnc, "sanguo")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	req := &testdata.TestMine{
-		Id:   7128,
+		Id:   512,
 		Name: "game_server",
 		Sex:  "man",
 	}
-	err = chessClient.Publish("BeginTime", "Calculate", req)
+	resp := &testdata.TestMineResp{}
+	err = chessClient.Request(context.Background(), "TestReqServer", "AddTestMine", req, resp)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	chessClient.Publish("")
 }

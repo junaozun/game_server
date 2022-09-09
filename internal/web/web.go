@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"log"
 
 	"github.com/junaozun/game_server/internal/web/wire"
@@ -30,7 +29,7 @@ func NewWebApp(cfg pkgConfig.GameConfig) *WebApp {
 	}
 }
 
-func (w *WebApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
+func (w *WebApp) Run() error {
 	web := app.New(
 		app.OnBeginHook(func() {
 			log.Printf("web app start addr:%s ....", w.httpxServer.Addr)

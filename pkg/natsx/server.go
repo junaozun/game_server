@@ -62,7 +62,7 @@ func (s *Server) subscribeMethod() error {
 					go func() {
 						defer s.wg.Done()
 						reply, err := s.handle(context.Background(), obj, msg, method)
-						if len(reply) == 0 {
+						if len(reply) == 0 { // notify (reply == 0)
 							return
 						}
 						if s.connEnc.Conn.IsClosed() {
@@ -126,6 +126,9 @@ func (s *Server) handle(ctx context.Context, obj *object, msg *nats.Msg, method 
 	resp, err := method.handle(obj.srv, ctx, req)
 	if err != nil {
 		return nil, err
+	}
+	if resp == nil {
+		return nil, nil
 	}
 	return s.connEnc.Enc.Encode(msg.Subject, resp)
 }

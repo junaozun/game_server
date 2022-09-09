@@ -1,7 +1,6 @@
 package battle
 
 import (
-	"context"
 	"log"
 
 	"github.com/junaozun/game_server/pkg/app"
@@ -15,7 +14,7 @@ func NewBattleApp() *BattleApp {
 	return &BattleApp{}
 }
 
-func (b *BattleApp) Run(ctx context.Context, cfg config.GameConfig) error {
+func (b *BattleApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	cross := app.New(
 		app.OnBeginHook(func() {

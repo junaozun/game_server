@@ -1,7 +1,6 @@
 package pvp
 
 import (
-	"context"
 	"log"
 
 	"github.com/junaozun/game_server/pkg/app"
@@ -15,7 +14,7 @@ func NewPvpApp() *PvpApp {
 	return &PvpApp{}
 }
 
-func (p *PvpApp) Run(ctx context.Context, cfg config.GameConfig) error {
+func (p *PvpApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	pvp := app.New(
 		app.OnBeginHook(func() {

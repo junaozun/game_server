@@ -14,7 +14,6 @@ import (
 	"github.com/junaozun/game_server/internal/logic"
 	"github.com/junaozun/game_server/internal/pvp"
 	"github.com/junaozun/game_server/internal/web"
-	"github.com/junaozun/game_server/pkg/app"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 )
 
@@ -38,7 +37,10 @@ func main() {
 		panic(err)
 	}
 	rand.Seed(time.Now().UnixNano())
-	var apps = []app.IApp{logic.NewLogicApp(), battle.NewBattleApp(), cross.NewCrossApp(), pvp.NewPvpApp(), web.NewWebApp(cfg)}
-	appMgr := app.NewAppMgr(apps...)
-	appMgr.Runs(cfg)
+	// 将逻辑服、战斗服、跨服、pvp服、web服全都启动起来
+	logic.NewLogicApp().Run(cfg)
+	battle.NewBattleApp().Run(cfg)
+	cross.NewCrossApp().Run(cfg)
+	pvp.NewPvpApp().Run(cfg)
+	web.NewWebApp(cfg).Run()
 }

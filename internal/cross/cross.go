@@ -1,7 +1,6 @@
 package cross
 
 import (
-	"context"
 	"log"
 	"os/signal"
 	"runtime"
@@ -18,7 +17,7 @@ func NewCrossApp() *CrossApp {
 	return &CrossApp{}
 }
 
-func (c *CrossApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
+func (c *CrossApp) Run(cfg pkgConfig.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	cross := app.New(
 		app.OnBeginHook(func() {

@@ -77,5 +77,4 @@ func TestClient(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	chessClient.Publish("")
 }

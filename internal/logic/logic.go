@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"context"
 	"flag"
 	"log"
 
@@ -32,7 +31,7 @@ func NewLogicApp() *LogicApp {
 	}
 }
 
-func (l *LogicApp) Run(ctx context.Context, cfg pkgConfig.GameConfig) error {
+func (l *LogicApp) Run(cfg pkgConfig.GameConfig) error {
 	flag.CommandLine.StringVar(&ServerId, "server_id", "", "logic server id")
 	dao, err := dao.NewDao([]interface{}{cfg.Logic.Mysql, cfg.Common.Etcd, cfg.Common.Cache})
 	if err != nil {
