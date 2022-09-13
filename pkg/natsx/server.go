@@ -30,7 +30,7 @@ func NewServer(connEnc *nats.EncodedConn) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) Register(serverName string, svc interface{}, opts ...ServiceOption) error {
+func (s *Server) Register(serverName string, svc interface{}, opts ...ServiceOption) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	opt := serviceOptions{}
@@ -46,14 +46,13 @@ func (s *Server) Register(serverName string, svc interface{}, opts ...ServiceOpt
 	}
 	err := service.parseServices(svc)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	err = s.subscribeMethod()
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
 }
 
 // 订阅所有的方法

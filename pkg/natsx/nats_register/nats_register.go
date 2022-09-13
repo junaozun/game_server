@@ -5,7 +5,7 @@ import (
 	"github.com/junaozun/game_server/pkg/natsx"
 )
 
-type RegisterNatsFunc func(serverName string, svc interface{}) error
+type RegisterNatsFunc func(serverName string, svc interface{})
 
 func RegisterNats(natsCfg *config.NatsConfig) RegisterNatsFunc {
 	connEnc, err := natsx.NewNatsJSONEnc(natsCfg.Server) // nats.MaxReconnects(int(natsCfg.MaxReconnects)),
@@ -19,7 +19,7 @@ func RegisterNats(natsCfg *config.NatsConfig) RegisterNatsFunc {
 	if err != nil {
 		panic(err)
 	}
-	return func(serverName string, svc interface{}) error {
-		return server.Register(serverName, svc)
+	return func(serverName string, svc interface{}) {
+		server.Register(serverName, svc)
 	}
 }
