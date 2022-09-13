@@ -38,7 +38,7 @@ func (l *Logic) Suxuefeng(ctx context.Context, req *testdata.TestMine) {
 }
 
 func TestServer(t *testing.T) {
-	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
+	connEnc, err := NewNatsPBEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
 		return
@@ -50,14 +50,14 @@ func TestServer(t *testing.T) {
 	}
 	err = server.Register("chess", &BenchNotifyService{})
 	err = server.Register("chess", &BeginTime{})
-	err = server.Register("logic", &Logic{})
+	err = server.Register("logic.100001", &Logic{})
 	for {
 
 	}
 }
 
 func TestClient(t *testing.T) {
-	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
+	connEnc, err := NewNatsPBEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
 		return

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/junaozun/game_server/internal/battle"
-	"github.com/junaozun/game_server/internal/cross"
+	"github.com/junaozun/game_server/internal/cross/chess"
 	"github.com/junaozun/game_server/internal/logic"
 	"github.com/junaozun/game_server/internal/pvp"
 	"github.com/junaozun/game_server/internal/web"
@@ -25,7 +25,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Second * 3)
-			fmt.Printf("协程数量%d", runtime.NumGoroutine())
+			fmt.Printf("协程数量%d\n", runtime.NumGoroutine())
 		}
 	}()
 	go func() {
@@ -38,9 +38,12 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 	// 将逻辑服、战斗服、跨服、pvp服、web服全都启动起来
-	logic.NewLogicApp().Run(cfg)
-	battle.NewBattleApp().Run(cfg)
-	cross.NewCrossApp().Run(cfg)
-	pvp.NewPvpApp().Run(cfg)
-	web.NewWebApp(cfg).Run()
+	go logic.NewLogicApp().Run(cfg)
+	go battle.NewBattleApp().Run(cfg)
+	go chess.NewChessApp().Run(cfg)
+	go pvp.NewPvpApp().Run(cfg)
+	go web.NewWebApp(cfg).Run()
+	for {
+
+	}
 }

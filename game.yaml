@@ -47,7 +47,7 @@ common:
     max_message: 1024
     frequency: 500
   nats:
-    server: nats://10.18.98.163:4222,nats://10.18.98.164:4222,nats://10.18.98.165:4222
+    server: nats://0.0.0.0:4222
     request_timeout: 3
     reconnect_wait: 1
     max_reconnects: 2147483647

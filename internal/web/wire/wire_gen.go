@@ -7,19 +7,22 @@
 package wire
 
 import (
+	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/controller/account"
 	"github.com/junaozun/game_server/internal/web/repo/repo_impl_mysql"
+	"github.com/junaozun/game_server/internal/web/repo/repo_impl_nats"
 	"github.com/junaozun/game_server/internal/web/router"
 	"github.com/junaozun/game_server/internal/web/service"
-	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func NewWebRouterMgr(db *gorm.DB) router.WebRouter {
-	iAccountRepo := repo_impl_mysql.NewAccountRepo(db)
+func NewWebRouterMgr(commponent *component.Component) router.WebRouter {
+	iAccountRepo := repo_impl_mysql.NewAccountRepo(commponent)
 	accountService := service.NewAccountService(iAccountRepo)
-	accountCtl := account.NewAccountCtl(accountService)
+	iNatsRepo := repo_impl_nats.NewNatsRepo(commponent)
+	natsService := service.NewNatsService(iNatsRepo)
+	accountCtl := account.NewAccountCtl(accountService, natsService)
 	webRouter := router.NewWebRouter(accountCtl)
 	return webRouter
 }

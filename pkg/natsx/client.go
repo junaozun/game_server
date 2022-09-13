@@ -3,6 +3,7 @@ package natsx
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/nats-io/nats.go"
 )
@@ -19,20 +20,29 @@ func NewClient(enc *nats.EncodedConn, serviceName string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Publish(objectName string, methodName string, req interface{}) error {
-	return c.call(nil, objectName, methodName, req, nil)
+func (c *Client) Publish(objectName string, methodName string, req interface{}, opt ...CallOption) error {
+	return c.call(nil, objectName, methodName, req, nil, opt...)
 }
 
-func (c *Client) Request(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}) error {
-	return c.call(ctx, objectName, methodName, req, resp)
+func (c *Client) Request(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}, opt ...CallOption) error {
+	return c.call(ctx, objectName, methodName, req, resp, opt...)
 }
 
-func (c *Client) call(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}) error {
+func (c *Client) call(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}, opt ...CallOption) error {
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Fprintf(os.Stderr, "client call panic:%v\n", e)
+		}
+	}()
+	callOpt := CallOptions{}
+	for _, v := range opt {
+		v(&callOpt)
+	}
 	var isPublish bool
 	if ctx == nil && resp == nil {
 		isPublish = true
 	}
-	subject := c.serviceName + "." + objectName + "." + methodName
+	subject := CombineSubject(c.serviceName, callOpt.id, objectName, methodName)
 	rpcReq, err := c.newRequest(subject, req, nil)
 	if err != nil {
 		return err

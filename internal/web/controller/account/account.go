@@ -13,12 +13,14 @@ import (
 )
 
 type AccountCtl struct {
-	Service *service.AccountService
+	Service     *service.AccountService
+	NatsService *service.NatsService
 }
 
-func NewAccountCtl(accountService *service.AccountService) *AccountCtl {
+func NewAccountCtl(accountService *service.AccountService, natsService *service.NatsService) *AccountCtl {
 	return &AccountCtl{
-		Service: accountService,
+		Service:     accountService,
+		NatsService: natsService,
 	}
 }
 
@@ -40,4 +42,18 @@ func (ctl *AccountCtl) Register(c *gin.Context) {
 	}
 	errno := ctl.Service.AddAccount(ctx, dbUser)
 	c.JSON(http.StatusOK, errno)
+}
+
+func (ctl *AccountCtl) UseNatsTest(c *gin.Context) {
+	ctx := c.Request.Context()
+	resp, err := ctl.NatsService.UseNatsTest(ctx, "nihao")
+	if err != nil {
+		c.JSON(http.StatusOK, ret.Err_Param)
+		return
+	}
+	r := &api.NatsRpcResp{
+		Total: resp.Id,
+		Name:  resp.Brother,
+	}
+	c.JSON(http.StatusOK, ret.OK.WithData(r))
 }

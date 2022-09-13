@@ -20,6 +20,7 @@ func NewWebRouter(accountCtl *account.AccountCtl) WebRouter {
 		account := g.Group("/account")
 		{
 			account.Any("/register", accountCtl.Register)
+			account.Any("/nats_rpc", accountCtl.UseNatsTest)
 		}
 	}
 }

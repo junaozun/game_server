@@ -3,6 +3,7 @@ package web
 import (
 	"log"
 
+	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/wire"
 	"github.com/junaozun/game_server/pkg/app"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
@@ -19,7 +20,8 @@ func NewWebApp(cfg pkgConfig.GameConfig) *WebApp {
 	if err != nil {
 		panic(err)
 	}
-	routers := wire.NewWebRouterMgr(dao.DB)
+	component := component.NewComponent(dao, cfg)
+	routers := wire.NewWebRouterMgr(component)
 	httpServer, err := httpx.New(routers, httpx.WithAddress("0.0.0.0:"+cfg.Web.Port))
 	if err != nil {
 		panic(err)

@@ -30,9 +30,14 @@ func NewServer(connEnc *nats.EncodedConn) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) Register(serverName string, svc interface{}) error {
+func (s *Server) Register(serverName string, svc interface{}, opts ...ServiceOption) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+	opt := serviceOptions{}
+	for _, v := range opts {
+		v(&opt)
+	}
+	serverName = CombineSubject(serverName, opt.id)
 	service := newservice(serverName)
 	if v, ok := s.services[serverName]; ok {
 		service = v
@@ -157,7 +162,7 @@ func (s *service) parseServices(srv interface{}) error {
 type object struct {
 	serverName string
 	srv        interface{}        // 对象名
-	methods    map[string]*method // 方法集合 (服务名.对象名.方法名: 方法)
+	methods    map[string]*method // 方法集合 (服务名.服务子id.对象名.方法名: 方法)
 }
 
 func newObject(serverName string, srv interface{}) *object {
@@ -188,7 +193,7 @@ func (o *object) parseObject() error {
 		return fmt.Errorf("service [%s] type:[%s] has no exported method", o.serverName, typeName)
 	}
 	for funName, funcVal := range methods {
-		subject := o.serverName + "." + typeName + "." + funName
+		subject := CombineSubject(o.serverName, typeName, funName)
 		o.methods[subject] = funcVal
 	}
 	return nil
