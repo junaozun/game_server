@@ -25,7 +25,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Second * 3)
-			fmt.Printf("协程数量%d\n", runtime.NumGoroutine())
+			fmt.Printf("协程数量%d", runtime.NumGoroutine())
 		}
 	}()
 	go func() {

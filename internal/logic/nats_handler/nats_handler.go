@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/natsx"
-	"github.com/junaozun/game_server/pkg/natsx/nats_register"
 	"github.com/junaozun/game_server/pkg/natsx/testdata"
 )
 
@@ -25,8 +23,6 @@ func (a *TestReqServer) AddTestMine(ctx context.Context, req *testdata.TestMine)
 	return repl, nil
 }
 
-func RegisterHandler(serverId string, natsCfg *config.NatsConfig) {
-	natsHandler := nats_register.RegisterNats(natsCfg)
-	serverName := natsx.CombineSubject("logic", serverId)
-	natsHandler(serverName, &TestReqServer{})
+func RegisterHandler(natsxSrv *natsx.NatsxServer, serverId string) {
+	natsxSrv.Register(natsxSrv.ServerName, &TestReqServer{}, natsx.WithServiceID(serverId))
 }

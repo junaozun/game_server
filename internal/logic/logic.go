@@ -11,6 +11,7 @@ import (
 	"github.com/junaozun/game_server/pkg/app"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/dao"
+	"github.com/junaozun/game_server/pkg/natsx"
 	"github.com/junaozun/game_server/pkg/ws"
 )
 
@@ -24,11 +25,13 @@ const (
 
 type LogicApp struct {
 	onLineUser *wsMgr.WsMgr
+	ServerName string
 }
 
 func NewLogicApp() *LogicApp {
 	return &LogicApp{
 		onLineUser: wsMgr.NewWsMgr(),
+		ServerName: "logic",
 	}
 }
 
@@ -41,8 +44,11 @@ func (l *LogicApp) Run(cfg pkgConfig.GameConfig) error {
 	wsServer := ws.NewWsServer(host+cfg.Logic.Port, ws.NewRouter())
 	// 初始化游戏玩法
 	game.NewGame(component.NewComponent(dao, cfg), wsServer.ServerRouter, l.onLineUser)
+
+	natsxServer := natsx.New(cfg.Common.NATS, l.ServerName)
 	// 注册nats
-	nats_handler.RegisterHandler(ServerId, cfg.Common.NATS)
+	nats_handler.RegisterHandler(natsxServer, ServerId)
+
 	logic := app.New(
 		app.OnBeginHook(func() {
 			log.Printf("logic app start,addr:%s ....", wsServer.Addr)
@@ -51,7 +57,7 @@ func (l *LogicApp) Run(cfg pkgConfig.GameConfig) error {
 			log.Printf("logic app exit,addr:%s ....", wsServer.Addr)
 		}),
 		app.Name("logic_"+ServerId),
-		app.Runners(wsServer),
+		app.Runners(wsServer, natsxServer),
 	)
 	if err := logic.Run(); err != nil {
 		return err

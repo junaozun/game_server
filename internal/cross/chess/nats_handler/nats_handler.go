@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/natsx/nats_register"
+	"github.com/junaozun/game_server/pkg/natsx"
 	"github.com/junaozun/game_server/pkg/natsx/testdata"
 )
 
@@ -24,7 +23,6 @@ func (a *TestChess) TestChessFunc(ctx context.Context, req *testdata.TestMine) (
 	return repl, nil
 }
 
-func RegisterHandler(serverName string, natsCfg *config.NatsConfig) {
-	natsHandler := nats_register.RegisterNats(natsCfg)
-	natsHandler(serverName, &TestChess{})
+func RegisterHandler(natsxSrv *natsx.NatsxServer) {
+	natsxSrv.Register(natsxSrv.ServerName, &TestChess{})
 }

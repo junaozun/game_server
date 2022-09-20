@@ -16,7 +16,7 @@ type Component struct {
 }
 
 func NewComponent(dao *dao.Dao, cfg pkgConfig.GameConfig) *Component {
-	connEnc, err := natsx.NewNatsJSONEnc(cfg.Common.NATS.Server)
+	connEnc, err := natsx.NewNatsPBEnc(cfg.Common.NATS.Server)
 	if err != nil {
 		panic(err)
 	}
