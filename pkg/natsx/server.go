@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go/ast"
+	"os"
 	"reflect"
 	"sync"
 
@@ -11,21 +12,31 @@ import (
 )
 
 type Server struct {
-	wg       sync.WaitGroup
-	mutex    sync.Mutex
-	connEnc  *nats.EncodedConn
-	services map[string]*service             // serverName:service (chess:service)(logic:service)
-	sersub   map[string][]*nats.Subscription // subject:所有订阅
+	wg          sync.WaitGroup
+	mutex       sync.Mutex
+	connEnc     *nats.EncodedConn
+	services    map[string]*service             // serverName(chess、logic、gvg):service
+	opt         serviceOptions                  // options
+	servicesSub map[string][]*nats.Subscription // serviceName:所有订阅
 }
 
 func NewServer(connEnc *nats.EncodedConn) (*Server, error) {
 	if !connEnc.Conn.IsConnected() {
 		return nil, fmt.Errorf("enc is not connected")
 	}
+	opt := serviceOptions{
+		errorHandler: func(i interface{}) {
+			fmt.Fprintf(os.Stderr, "error:%v\n", i)
+		},
+		recoverHandler: func(i interface{}) {
+			fmt.Fprintf(os.Stderr, "server panic:%v\n", i)
+		},
+	}
 	s := &Server{
-		connEnc:  connEnc,
-		services: make(map[string]*service),
-		sersub:   make(map[string][]*nats.Subscription),
+		opt:         opt,
+		connEnc:     connEnc,
+		services:    make(map[string]*service),
+		servicesSub: make(map[string][]*nats.Subscription),
 	}
 	return s, nil
 }
@@ -33,11 +44,10 @@ func NewServer(connEnc *nats.EncodedConn) (*Server, error) {
 func (s *Server) Register(serverName string, svc interface{}, opts ...ServiceOption) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	opt := serviceOptions{}
 	for _, v := range opts {
-		v(&opt)
+		v(&s.opt)
 	}
-	serverName = CombineSubject(serverName, opt.id)
+	serverName = CombineSubject(serverName, s.opt.id)
 	service := newservice(serverName)
 	if v, ok := s.services[serverName]; ok {
 		service = v
@@ -61,48 +71,57 @@ func (s *Server) subscribeMethod() error {
 		for _, obj := range service.objects {
 			for subject, v := range obj.methods {
 				method := v
-				natsSub, subErr := s.connEnc.Subscribe(subject, func(msg *nats.Msg) {
+				cb := func(msg *nats.Msg) {
 					s.wg.Add(1)
 					go func() {
 						defer s.wg.Done()
-						reply, err := s.handle(context.Background(), obj, msg, method)
-						if len(reply) == 0 { // notify (reply == 0)
-							return
-						}
-						if s.connEnc.Conn.IsClosed() {
-							fmt.Errorf("conn closed")
-							return
-						}
-						response := Reply{
-							Payload: reply,
-						}
+						err := s.DealSubFunction(context.Background(), obj, msg, method)
 						if err != nil {
-							response.Error = err.Error()
-						}
-						b, e := s.connEnc.Enc.Encode(msg.Subject, response)
-						if e != nil {
-							fmt.Errorf("[encode err:%s]", e.Error())
-							return
-						}
-						respMsg := &nats.Msg{
-							Subject: msg.Reply,
-							Data:    b,
-						}
-						err = s.connEnc.Conn.PublishMsg(respMsg)
-						if err != nil {
-							fmt.Errorf("[publishMsg err:%s]", err.Error())
+							s.opt.errorHandler(err.Error())
 						}
 					}()
-				})
+				}
+				natsSub, subErr := s.connEnc.Subscribe(subject, cb)
 				if subErr != nil {
 					return subErr
 				}
-				// todo
-				s.sersub[subject] = append(s.sersub[subject], natsSub)
+				s.servicesSub[service.serverName] = append(s.servicesSub[service.serverName], natsSub)
 			}
 		}
 	}
 	return nil
+}
+
+func (s *Server) DealSubFunction(ctx context.Context, obj *object, msg *nats.Msg, method *method) error {
+	if s.opt.recoverHandler != nil {
+		defer func() {
+			if e := recover(); e != nil {
+				s.opt.recoverHandler(e)
+			}
+		}()
+	}
+	reply, err := s.handle(ctx, obj, msg, method)
+	if len(reply) == 0 { // notify (reply == 0)
+		return nil
+	}
+	if s.connEnc.Conn.IsClosed() {
+		return fmt.Errorf("conn closed")
+	}
+	response := &Reply{
+		Payload: reply,
+	}
+	if err != nil {
+		response.Error = err.Error()
+	}
+	b, e := s.connEnc.Enc.Encode(msg.Subject, response)
+	if e != nil {
+		return fmt.Errorf("[encode err:%s]", e.Error())
+	}
+	respMsg := &nats.Msg{
+		Subject: msg.Reply,
+		Data:    b,
+	}
+	return s.connEnc.Conn.PublishMsg(respMsg)
 }
 
 func (s *Server) handle(ctx context.Context, obj *object, msg *nats.Msg, method *method) ([]byte, error) {
@@ -135,6 +154,42 @@ func (s *Server) handle(ctx context.Context, obj *object, msg *nats.Msg, method 
 		return nil, nil
 	}
 	return s.connEnc.Enc.Encode(msg.Subject, resp)
+}
+
+func (s *Server) Close(ctx context.Context) error {
+	s.CancelAllServerSub()
+	if err := s.connEnc.Flush(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// CancelAllServerSub  取消所有服务订阅
+func (s *Server) CancelAllServerSub() {
+	s.mutex.Lock()
+	srvNames := make([]string, 0, len(s.servicesSub))
+	for k := range s.servicesSub {
+		srvNames = append(srvNames, k)
+	}
+	s.mutex.Unlock()
+	for _, v := range srvNames {
+		s.cancelServerSubByName(v)
+	}
+}
+
+// cancelServerSubByName 根据服务名取消该服务下的所有订阅
+func (s *Server) cancelServerSubByName(srvName string) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	subs, ok := s.servicesSub[srvName]
+	if !ok {
+		return false
+	}
+	for _, sub := range subs {
+		sub.Unsubscribe()
+		delete(s.servicesSub, srvName)
+	}
+	return true
 }
 
 type service struct {

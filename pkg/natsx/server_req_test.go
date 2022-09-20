@@ -39,7 +39,7 @@ func (a *TestReqServer2) AddTestMine(ctx context.Context, req *testdata.TestMine
 }
 
 func TestStartServer(t *testing.T) {
-	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
+	connEnc, err := NewNatsPBEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
 		return
@@ -49,15 +49,15 @@ func TestStartServer(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = server.Register("chess", &TestReqServer{})
-	err = server.Register("chess", &TestReqServer2{})
+	server.Register("chess", &TestReqServer{})
+	server.Register("chess", &TestReqServer2{})
 	for {
 
 	}
 }
 
 func TestStartClient(t *testing.T) {
-	connEnc, err := NewNatsJSONEnc("nats://0.0.0.0:4222")
+	connEnc, err := NewNatsPBEnc("nats://0.0.0.0:4222")
 	if err != nil {
 		t.Error(err)
 		return

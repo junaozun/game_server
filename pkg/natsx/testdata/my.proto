@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package testdata;
+option go_package = "./;testdata";
 
 message TestMine {
   int64 Id = 1;

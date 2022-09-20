@@ -1,18 +1,7 @@
 syntax = "proto3";
 
 package natsx;
-option go_package = "natsx";
-
-import "google/protobuf/descriptor.proto";
-
-extend google.protobuf.ServiceOptions {
-	bool serviceAsync = 43230; // service异步handler
-	bool clientAsync = 43231; // client异步请求
-}
-
-extend google.protobuf.MethodOptions {
-  bool publish = 2360; // false表示request(需要返回值)，true表示广播(不需要返回值)
-}
+option go_package = "./;natsx";
 
 // Empty 空值
 message Empty {}

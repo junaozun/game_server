@@ -8,33 +8,33 @@ import (
 	"github.com/junaozun/game_server/pkg/natsx/testdata"
 )
 
-type BenchNotifyService struct {
+type ChessService1 struct {
 }
 
-func (a *BenchNotifyService) Notify(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BenchNotifyService Notify success")
+func (a *ChessService1) Notify(ctx context.Context, req *testdata.TestMine) {
+	fmt.Printf("ChessService1 Notify success req:%v", req)
 }
 
-func (a *BenchNotifyService) Test(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BenchNotifyService Test success")
+func (a *ChessService1) Test(ctx context.Context, req *testdata.TestMine) {
+	fmt.Printf("ChessService1 Test success req:%v", req)
 }
 
-type BeginTime struct {
+type ChessService2 struct {
 }
 
-func (a *BeginTime) Calculate(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BeginTime Calculate success")
+func (a *ChessService2) Calculate(ctx context.Context, req *testdata.TestMine) {
+	fmt.Printf("ChessService2 Calculate success :%v", req)
 }
 
-func (a *BeginTime) BeginEnd(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("BeginTime BeginEnd success")
+func (a *ChessService2) BeginEnd(ctx context.Context, req *testdata.TestMine) {
+	fmt.Printf("ChessService2 BeginEnd success :%v", req)
 }
 
-type Logic struct {
+type LogicService1 struct {
 }
 
-func (l *Logic) Suxuefeng(ctx context.Context, req *testdata.TestMine) {
-	fmt.Println("Logic Suxuefeng success")
+func (l *LogicService1) Suxuefeng(ctx context.Context, req *testdata.TestMine) {
+	fmt.Printf("LogicService1 Suxuefeng success req:%v", req)
 }
 
 func TestServer(t *testing.T) {
@@ -48,9 +48,9 @@ func TestServer(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = server.Register("chess", &BenchNotifyService{})
-	err = server.Register("chess", &BeginTime{})
-	err = server.Register("logic.100001", &Logic{})
+	server.Register("chess", &ChessService1{})
+	server.Register("chess", &ChessService2{})
+	server.Register("logic", &LogicService1{}, WithServiceID(100001))
 	for {
 
 	}
@@ -62,6 +62,7 @@ func TestClient(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	/************************chess client *********************/
 	chessClient, err := NewClient(connEnc, "chess")
 	if err != nil {
 		t.Error(err)
@@ -69,10 +70,26 @@ func TestClient(t *testing.T) {
 	}
 	req := &testdata.TestMine{
 		Id:   7128,
-		Name: "game_server",
+		Name: "chess",
 		Sex:  "man",
 	}
-	err = chessClient.Publish("BeginTime", "Calculate", req)
+	err = chessClient.Publish("ChessService1", "Notify", req)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	/*****************************logic clinet ********************/
+	logicClient, err := NewClient(connEnc, "logic")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req2 := &testdata.TestMine{
+		Id:   123,
+		Name: "logic",
+		Sex:  "man",
+	}
+	err = logicClient.Publish("LogicService1", "Suxuefeng", req2, WithCallID(100001))
 	if err != nil {
 		t.Error(err)
 		return
