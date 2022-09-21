@@ -1,3 +1,7 @@
+gate:
+  port: 8004
+  debug: true
+
 logic:
   port: 8003
   debug: true
@@ -8,7 +12,7 @@ logic:
     name: logic_server
 
 cross:
-  port: 8004
+  port: 8888
   debug: true
   mysql:
     user: root
@@ -17,11 +21,11 @@ cross:
     name: cross_server
 
 pvp:
-  port: 8005
+  port: 7777
   debug: true
 
 battle:
-  port: 8006
+  port: 6666
   debug: true
 
 web:

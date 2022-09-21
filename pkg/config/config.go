@@ -2,12 +2,13 @@ package config
 
 // GameConfig 配置
 type GameConfig struct {
-	Logic  *ServerConfig `yaml:"logic"`
-	Cross  *ServerConfig `yaml:"cross"`
-	Pvp    *ServerConfig `yaml:"pvp"`
-	Battle *ServerConfig `yaml:"battle"`
-	Web    *ServerConfig `yaml:"web"`
-	Common *CommonConfig `yaml:"common"`
+	Logic   *ServerConfig `yaml:"logic"`
+	Cross   *ServerConfig `yaml:"cross"`
+	Pvp     *ServerConfig `yaml:"pvp"`
+	Battle  *ServerConfig `yaml:"battle"`
+	Web     *ServerConfig `yaml:"web"`
+	GateWay *ServerConfig `yaml:"gateWay"`
+	Common  *CommonConfig `yaml:"common"`
 }
 
 type ServerConfig struct {

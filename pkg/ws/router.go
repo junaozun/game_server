@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"log"
 	"strings"
 )
 
@@ -33,6 +34,11 @@ func (r *Router) Run(req *WsMsgReq, rsp *WsMsgResp) {
 	}
 	prefix := strs[0]
 	name := strs[1]
+	ag, ok := r.group["*"]
+	if ok {
+		ag.exec(name, req, rsp)
+		return
+	}
 	g, ok := r.group[prefix]
 	if !ok {
 		return
@@ -50,6 +56,13 @@ func (g *group) exec(name string, req *WsMsgReq, rsp *WsMsgResp) {
 	h := g.handlerMap[name]
 	if h != nil {
 		h(req, rsp)
+	} else {
+		ah := g.handlerMap["*"]
+		if ah != nil {
+			ah(req, rsp)
+		} else {
+			log.Println("找不到路由....")
+		}
 	}
 }
 

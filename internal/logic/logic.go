@@ -56,7 +56,7 @@ func (l *LogicApp) Run(cfg pkgConfig.GameConfig) error {
 		app.OnExitHook(func() {
 			log.Printf("logic app exit,addr:%s ....", wsServer.Addr)
 		}),
-		app.Name("logic_"+ServerId),
+		app.Name(l.ServerName+ServerId),
 		app.Runners(wsServer, natsxServer),
 	)
 	if err := logic.Run(); err != nil {

@@ -1,4 +1,4 @@
-package nats_run
+package main
 
 import (
 	"fmt"
