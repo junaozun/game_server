@@ -22,7 +22,9 @@ func NewWsServer(addr string, router *Router) *WsServer {
 }
 
 func (s *WsServer) Start(ctx context.Context) error {
-	http.HandleFunc("/", s.wsHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.wsHandler)
+	s.Handler = mux
 	err := s.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err

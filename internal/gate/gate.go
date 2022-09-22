@@ -1,14 +1,15 @@
 package gate
 
 import (
+	"log"
+
 	"github.com/junaozun/game_server/pkg/app"
 	pkgConfig "github.com/junaozun/game_server/pkg/config"
 	"github.com/junaozun/game_server/pkg/ws"
-	"log"
 )
 
 const (
-	host = "0.0.0.0:"
+	host = "127.0.0.1:"
 )
 
 type GateApp struct {

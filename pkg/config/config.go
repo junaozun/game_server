@@ -7,7 +7,7 @@ type GameConfig struct {
 	Pvp     *ServerConfig `yaml:"pvp"`
 	Battle  *ServerConfig `yaml:"battle"`
 	Web     *ServerConfig `yaml:"web"`
-	GateWay *ServerConfig `yaml:"gateWay"`
+	GateWay *ServerConfig `yaml:"gate"`
 	Common  *CommonConfig `yaml:"common"`
 }
 

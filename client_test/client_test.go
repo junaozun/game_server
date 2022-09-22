@@ -8,6 +8,7 @@ import (
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
+	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/mitchellh/mapstructure"
 )
@@ -19,7 +20,7 @@ var (
 
 func TestMain(m *testing.M) {
 	var err error
-	url := "ws://localhost:8003" // 服务器地址
+	url := "ws://localhost:8004" // 服务器地址
 	Ws, _, err = websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		panic(err)
