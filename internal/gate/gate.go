@@ -25,7 +25,7 @@ func NewGateWay() *GateApp {
 }
 
 func (g *GateApp) Run(cfg pkgConfig.GameConfig) error {
-	g.initRouter()
+	g.InitRouter()
 	wsServer := ws.NewWsServer(host+cfg.GateWay.Port, g.Router)
 	gate := app.New(
 		app.OnBeginHook(func() {
@@ -41,12 +41,4 @@ func (g *GateApp) Run(cfg pkgConfig.GameConfig) error {
 		return err
 	}
 	return nil
-}
-
-func (g *GateApp) initRouter() {
-	g.Router.Group("*").AddRouter("*", g.routerForward)
-}
-
-func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
-	log.Println("请求到达gateway....")
 }
