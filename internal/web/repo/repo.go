@@ -4,7 +4,7 @@ import (
 	"context"
 
 	common_model "github.com/junaozun/game_server/model"
-	"github.com/junaozun/game_server/pkg/natsx"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 type IAccountRepo interface {

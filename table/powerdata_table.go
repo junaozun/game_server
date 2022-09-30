@@ -6,7 +6,8 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/junaozun/game_server/pkg/csvloader"
+	"github.com/junaozun/game_server/pkg/utils"
+	csvloader "github.com/junaozun/gogopkg/csvloader"
 )
 
 // PowerDataTable 表格

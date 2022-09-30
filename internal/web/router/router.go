@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/junaozun/game_server/internal/web/controller/account"
-	"github.com/junaozun/game_server/pkg/httpx/middleware"
+	"github.com/junaozun/gogopkg/httpx/middleware"
 )
 
 type WebRouter func(engine *gin.Engine)

@@ -1,7 +1,7 @@
 package ret
 
 import (
-	"github.com/junaozun/game_server/pkg/errno"
+	"github.com/junaozun/gogopkg/errno"
 )
 
 var (

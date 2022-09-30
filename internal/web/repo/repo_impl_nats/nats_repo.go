@@ -6,7 +6,7 @@ import (
 
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/repo"
-	"github.com/junaozun/game_server/pkg/natsx"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 type NatsRepo struct {

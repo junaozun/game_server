@@ -5,8 +5,8 @@ import (
 
 	"github.com/junaozun/game_server/internal/web/repo"
 	common_model "github.com/junaozun/game_server/model"
-	"github.com/junaozun/game_server/pkg/errno"
 	"github.com/junaozun/game_server/ret"
+	"github.com/junaozun/gogopkg/errno"
 )
 
 type AccountService struct {

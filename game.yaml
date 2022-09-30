@@ -1,9 +1,14 @@
 gate:
   port: 8004
   debug: true
+  login_proxy: ws://127.0.0.1:8005
+  logic_proxy: ws://127.0.0.1:8006
+
+login:
+  port: 8005
 
 logic:
-  port: 8003
+  port: 8006
   debug: true
   mysql:
     user: root
@@ -12,8 +17,6 @@ logic:
     name: logic_server
 
 cross:
-  port: 8888
-  debug: true
   mysql:
     user: root
     password: 123456

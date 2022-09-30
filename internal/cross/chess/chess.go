@@ -6,10 +6,10 @@ import (
 
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/cross/chess/nats_handler"
-	"github.com/junaozun/game_server/pkg/app"
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/dao"
-	"github.com/junaozun/game_server/pkg/natsx"
+	"github.com/junaozun/gogopkg/app"
+	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/dao"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 type ChessApp struct {
@@ -22,12 +22,12 @@ func NewChessApp() *ChessApp {
 	}
 }
 
-func (c *ChessApp) Run(cfg pkgConfig.GameConfig) error {
+func (c *ChessApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	natsxServer := natsx.New(cfg.Common.NATS, c.ServerName)
 	// 注册nats
 	nats_handler.RegisterHandler(natsxServer)
-	dao, err := dao.NewDao([]interface{}{cfg.Cross.Mysql, cfg.Common.Etcd, cfg.Common.Cache})
+	dao, err := dao.NewDao([]interface{}{cfg.Cross.Mysql, cfg.Common.Etcd, cfg.Common.Redis})
 	if err != nil {
 		panic(err)
 	}

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/junaozun/game_server/internal/web/repo"
-	"github.com/junaozun/game_server/pkg/natsx"
-	"github.com/junaozun/game_server/pkg/natsx/testdata"
+	"github.com/junaozun/gogopkg/natsx"
+	"github.com/junaozun/gogopkg/natsx/testdata"
 )
 
 type NatsService struct {

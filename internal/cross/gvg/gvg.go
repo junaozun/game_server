@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/junaozun/game_server/internal/cross/gvg/nats_handler"
-	"github.com/junaozun/game_server/pkg/app"
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/natsx"
+	"github.com/junaozun/gogopkg/app"
+	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 type GvgApp struct {
@@ -19,7 +19,7 @@ func NewGvgApp() *GvgApp {
 	}
 }
 
-func (c *GvgApp) Run(cfg pkgConfig.GameConfig) error {
+func (c *GvgApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	natsxServer := natsx.New(cfg.Common.NATS, c.ServerName)
 	// 注册nats

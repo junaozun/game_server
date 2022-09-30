@@ -5,18 +5,18 @@ import (
 
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/wire"
-	"github.com/junaozun/game_server/pkg/app"
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/dao"
-	"github.com/junaozun/game_server/pkg/httpx"
+	"github.com/junaozun/gogopkg/app"
+	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/dao"
+	"github.com/junaozun/gogopkg/httpx"
 )
 
 type WebApp struct {
 	httpxServer *httpx.HttpxServer
 }
 
-func NewWebApp(cfg pkgConfig.GameConfig) *WebApp {
-	dao, err := dao.NewDao([]interface{}{cfg.Web.Mysql, cfg.Common.Etcd, cfg.Common.Cache})
+func NewWebApp(cfg config.GameConfig) *WebApp {
+	dao, err := dao.NewDao([]interface{}{cfg.Web.Mysql, cfg.Common.Etcd, cfg.Common.Redis})
 	if err != nil {
 		panic(err)
 	}

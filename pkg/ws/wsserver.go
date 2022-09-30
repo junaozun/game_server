@@ -85,7 +85,7 @@ func (w *wsServer) writeMsgLoop() {
 	for {
 		select {
 		case wsResp := <-w.outChan:
-			w.write2Client(wsResp)
+			w.write2Client(wsResp.Body)
 		case <-w.closeWrite:
 			return
 		}
@@ -156,8 +156,8 @@ func (w *wsServer) readMsgLoop() {
 	w.Close()
 }
 
-func (w *wsServer) write2Client(resp *WsMsgResp) {
-	data, err := json.Marshal(resp.Body)
+func (w *wsServer) write2Client(resp interface{}) {
+	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Println(err)
 		return

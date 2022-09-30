@@ -3,8 +3,8 @@ package pvp
 import (
 	"log"
 
-	"github.com/junaozun/game_server/pkg/app"
-	"github.com/junaozun/game_server/pkg/config"
+	"github.com/junaozun/gogopkg/app"
+	"github.com/junaozun/gogopkg/config"
 )
 
 type PvpApp struct {

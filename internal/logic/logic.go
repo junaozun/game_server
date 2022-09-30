@@ -8,11 +8,11 @@ import (
 	"github.com/junaozun/game_server/internal/logic/game"
 	"github.com/junaozun/game_server/internal/logic/nats_handler"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
-	"github.com/junaozun/game_server/pkg/app"
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/dao"
-	"github.com/junaozun/game_server/pkg/natsx"
 	"github.com/junaozun/game_server/pkg/ws"
+	"github.com/junaozun/gogopkg/app"
+	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/dao"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 var (
@@ -35,9 +35,9 @@ func NewLogicApp() *LogicApp {
 	}
 }
 
-func (l *LogicApp) Run(cfg pkgConfig.GameConfig) error {
+func (l *LogicApp) Run(cfg config.GameConfig) error {
 	flag.CommandLine.StringVar(&ServerId, "server_id", "100001", "logic server id")
-	dao, err := dao.NewDao([]interface{}{cfg.Logic.Mysql, cfg.Common.Etcd, cfg.Common.Cache})
+	dao, err := dao.NewDao([]interface{}{cfg.Logic.Mysql, cfg.Common.Etcd, cfg.Common.Redis})
 	if err != nil {
 		panic(err)
 	}

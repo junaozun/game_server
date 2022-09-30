@@ -1,9 +1,9 @@
 package component
 
 import (
-	pkgConfig "github.com/junaozun/game_server/pkg/config"
-	"github.com/junaozun/game_server/pkg/dao"
-	"github.com/junaozun/game_server/pkg/natsx"
+	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/dao"
+	"github.com/junaozun/gogopkg/natsx"
 )
 
 // Component 组件
@@ -15,7 +15,7 @@ type Component struct {
 	// kafka // 消息中间件组件
 }
 
-func NewComponent(dao *dao.Dao, cfg pkgConfig.GameConfig) *Component {
+func NewComponent(dao *dao.Dao, cfg config.GameConfig) *Component {
 	connEnc, err := natsx.NewNatsPBEnc(cfg.Common.NATS.Server)
 	if err != nil {
 		panic(err)
