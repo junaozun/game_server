@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/wire v0.5.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/junaozun/gogopkg v0.0.0-20220930092653-ccf43e1295a5
+	github.com/junaozun/gogopkg v0.0.0-20220930100941-82c70cda4530
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 	gorm.io/gorm v1.23.10

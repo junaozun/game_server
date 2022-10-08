@@ -122,8 +122,8 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
-github.com/junaozun/gogopkg v0.0.0-20220930092653-ccf43e1295a5 h1:7BAdEVgbQQBDu0G6S8UY7eHQ2W3shaJ41/tQrQJjMI0=
-github.com/junaozun/gogopkg v0.0.0-20220930092653-ccf43e1295a5/go.mod h1:QM6uGxukZ0lm6VGs+6UDi0F6CWm7QVOtV1UMqZomD24=
+github.com/junaozun/gogopkg v0.0.0-20220930100941-82c70cda4530 h1:x5lokDAcjzws05ZNRJIa28Enl/iHwEUbaGNbKPMMaa8=
+github.com/junaozun/gogopkg v0.0.0-20220930100941-82c70cda4530/go.mod h1:QM6uGxukZ0lm6VGs+6UDi0F6CWm7QVOtV1UMqZomD24=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.15.11 h1:Lcadnb3RKGin4FYM/orgq0qde+nc15E5Cbqg4B9Sx9c=

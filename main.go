@@ -3,10 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/junaozun/game_server/internal/gate"
@@ -25,12 +29,6 @@ var (
 
 func main() {
 	go func() {
-		for {
-			time.Sleep(time.Second * 3)
-			fmt.Printf("协程数量%d", runtime.NumGoroutine())
-		}
-	}()
-	go func() {
 		fmt.Println("pprof start...")
 		fmt.Println(http.ListenAndServe(":9876", nil))
 	}()
@@ -46,7 +44,20 @@ func main() {
 	go pvp.NewPvpApp().Run(cfg)
 	go web.NewWebApp(cfg).Run()
 	go gate.NewGateWay().Run(cfg)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt)
+	ticker := time.NewTimer(time.Minute)
+	defer ticker.Stop()
+	// 主循环
+QUIT:
 	for {
-
+		select {
+		case sig := <-sigs:
+			log.Printf("Signal: %s", sig.String())
+			break QUIT
+		case <-ticker.C:
+			fmt.Printf("协程数量%d\n", runtime.NumGoroutine())
+		}
 	}
+	log.Printf("[main] quiting...")
 }
