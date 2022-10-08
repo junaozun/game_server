@@ -11,6 +11,7 @@ import (
 type WebRouter func(engine *gin.Engine)
 
 func NewWebRouter(accountCtl *account.AccountCtl) WebRouter {
+	gin.SetMode(gin.ReleaseMode)
 	return func(g *gin.Engine) {
 		g.Use(middleware.Cors())
 		g.GET("/ping", func(context *gin.Context) {

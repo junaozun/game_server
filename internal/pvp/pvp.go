@@ -1,10 +1,9 @@
 package pvp
 
 import (
-	"log"
-
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 type PvpApp struct {
@@ -18,10 +17,10 @@ func (p *PvpApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	pvp := app.New(
 		app.OnBeginHook(func() {
-			log.Println("pvp app start....")
+			logrusx.Log.Info("pvp app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Println("pvp app exit....")
+			logrusx.Log.Info("pvp app exit .....")
 		}),
 		app.Name("pvp"),
 		app.Runners(runners...),

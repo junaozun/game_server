@@ -1,14 +1,13 @@
 package web
 
 import (
-	"log"
-
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/wire"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
 	"github.com/junaozun/gogopkg/dao"
 	"github.com/junaozun/gogopkg/httpx"
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 type WebApp struct {
@@ -22,7 +21,7 @@ func NewWebApp(cfg config.GameConfig) *WebApp {
 	}
 	component := component.NewComponent(dao, cfg)
 	routers := wire.NewWebRouterMgr(component)
-	httpServer, err := httpx.New(routers, httpx.WithAddress("0.0.0.0:"+cfg.Web.Port))
+	httpServer, err := httpx.New(routers, httpx.WithAddress("0.0.0.0:"+cfg.Web.Port), httpx.WithPProf(false))
 	if err != nil {
 		panic(err)
 	}
@@ -34,10 +33,14 @@ func NewWebApp(cfg config.GameConfig) *WebApp {
 func (w *WebApp) Run() error {
 	web := app.New(
 		app.OnBeginHook(func() {
-			log.Printf("web app start addr:%s ....", w.httpxServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": w.httpxServer.Addr,
+			}).Info("web app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Printf("web app exit addr:%s ....", w.httpxServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": w.httpxServer.Addr,
+			}).Info("web app exit .....")
 		}),
 		app.Name("web"),
 		app.Runners(w.httpxServer),

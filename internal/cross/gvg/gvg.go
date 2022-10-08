@@ -1,11 +1,10 @@
 package chess
 
 import (
-	"log"
-
 	"github.com/junaozun/game_server/internal/cross/gvg/nats_handler"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/logrusx"
 	"github.com/junaozun/gogopkg/natsx"
 )
 
@@ -27,10 +26,10 @@ func (c *GvgApp) Run(cfg config.GameConfig) error {
 	runners = append(runners, natsxServer)
 	gvg := app.New(
 		app.OnBeginHook(func() {
-			log.Println("gvg app start....")
+			logrusx.Log.Info("gvg app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Println("gvg app exit....")
+			logrusx.Log.Info("gvg app exit .....")
 		}),
 		app.Name("gvg"),
 		app.Runners(runners...),

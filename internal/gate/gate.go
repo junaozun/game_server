@@ -1,11 +1,10 @@
 package gate
 
 import (
-	"log"
-
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 const (
@@ -33,10 +32,14 @@ func (g *GateApp) Run(cfg config.GameConfig) error {
 	wsServer := ws.NewWsServer(host+cfg.GateWay.Port, g.Router)
 	gate := app.New(
 		app.OnBeginHook(func() {
-			log.Printf("gate app start,addr:%s ....", wsServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": wsServer.Addr,
+			}).Info("gate app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Printf("gate app exit,addr:%s ....", wsServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": wsServer.Addr,
+			}).Info("gate app exit .....")
 		}),
 		app.Name(g.ServerName),
 		app.Runners(wsServer),

@@ -14,13 +14,14 @@ import (
 	"time"
 
 	"github.com/junaozun/game_server/internal/gate"
+	"github.com/junaozun/game_server/internal/web"
 	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/logrusx"
 
 	"github.com/junaozun/game_server/internal/battle"
 	"github.com/junaozun/game_server/internal/cross/chess"
 	"github.com/junaozun/game_server/internal/logic"
 	"github.com/junaozun/game_server/internal/pvp"
-	"github.com/junaozun/game_server/internal/web"
 )
 
 var (
@@ -29,7 +30,7 @@ var (
 
 func main() {
 	go func() {
-		fmt.Println("pprof start...")
+		logrusx.Log.Info("pprof start.....")
 		fmt.Println(http.ListenAndServe(":9876", nil))
 	}()
 	cfg := config.GameConfig{}
@@ -56,8 +57,10 @@ QUIT:
 			log.Printf("Signal: %s", sig.String())
 			break QUIT
 		case <-ticker.C:
-			fmt.Printf("协程数量%d\n", runtime.NumGoroutine())
+			logrusx.Log.WithFields(logrusx.Fields{
+				"goroutine count": runtime.NumGoroutine(),
+			}).Info("协程数量")
 		}
 	}
-	log.Printf("[main] quiting...")
+	logrusx.Log.Info("[main] quiting......")
 }

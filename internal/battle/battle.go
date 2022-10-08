@@ -1,10 +1,9 @@
 package battle
 
 import (
-	"log"
-
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 type BattleApp struct {
@@ -18,10 +17,10 @@ func (b *BattleApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
 	cross := app.New(
 		app.OnBeginHook(func() {
-			log.Println("battle app start....")
+			logrusx.Log.Info("battle app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Println("battle app exit....")
+			logrusx.Log.Info("battle app exit .....")
 		}),
 		app.Runners(runners...),
 		app.Name("battle"),

@@ -2,7 +2,6 @@ package logic
 
 import (
 	"flag"
-	"log"
 
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/logic/game"
@@ -12,6 +11,7 @@ import (
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
 	"github.com/junaozun/gogopkg/dao"
+	"github.com/junaozun/gogopkg/logrusx"
 	"github.com/junaozun/gogopkg/natsx"
 )
 
@@ -51,10 +51,14 @@ func (l *LogicApp) Run(cfg config.GameConfig) error {
 
 	logic := app.New(
 		app.OnBeginHook(func() {
-			log.Printf("logic app start,addr:%s ....", wsServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": wsServer.Addr,
+			}).Info("logic app start .....")
 		}),
 		app.OnExitHook(func() {
-			log.Printf("logic app exit,addr:%s ....", wsServer.Addr)
+			logrusx.Log.WithFields(logrusx.Fields{
+				"addr": wsServer.Addr,
+			}).Info("logic app exit .....")
 		}),
 		app.Name(l.ServerName+ServerId),
 		app.Runners(wsServer, natsxServer),
