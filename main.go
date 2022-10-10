@@ -54,6 +54,7 @@ QUIT:
 	for {
 		select {
 		case sig := <-sigs:
+			time.Sleep(3 * time.Second)
 			log.Printf("Signal: %s", sig.String())
 			break QUIT
 		case <-ticker.C:
