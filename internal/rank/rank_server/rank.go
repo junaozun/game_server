@@ -85,22 +85,7 @@ type rankItem struct {
 
 // GetRank 获取排行榜
 func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb func(*RankResult)) {
-	meScore, err := r.db.asyncRedis.Sync().ZRevRank(rankKey, me)
-	if err != nil {
-		return
-	}
-	meRank, err := r.db.asyncRedis.Sync().ZRevRank(rankKey, me)
-	if err != nil {
-		return
-	}
-
-	result := &RankResult{
-		Me: &rankItem{
-			id:    me,
-			score: meScore,
-			rank:  uint32(meRank),
-		},
-	}
+	result := &RankResult{}
 	r.db.asyncRedis.ZRevRank(rankKey, me, func(meRank int64, err error) {
 		if err != nil {
 			logrusx.Log.WithFields(logrusx.Fields{
