@@ -38,7 +38,7 @@ func main() {
 		panic(err)
 	}
 	rand.Seed(time.Now().UnixNano())
-	// 将逻辑服、战斗服、跨服、pvp服、web服,gateway全都启动起来
+	// 将逻辑服、战斗服、跨服、pvp服、web服,gateway,排行榜服全都启动起来
 	go logic.NewLogicApp().Run(cfg)
 	go battle.NewBattleApp().Run(cfg)
 	go chess.NewChessApp().Run(cfg)

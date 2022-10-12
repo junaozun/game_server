@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package rank;
+option go_package = "./;api";
+
+message GetRankReq {
+    string rankKey = 1;
+    string me = 2;
+    uint32 beginRank = 3;
+    uint32 count = 4;
+}
+
+message GetRankResp {
+    repeated RankItem rankItem = 1;
+    RankItem me = 2;
+    int64 total = 3;
+}
+
+message RankItem {
+    string id = 1;
+    int64 score = 2;
+    uint32 rank = 3;
+    uint32 oldRank = 4;
+}
