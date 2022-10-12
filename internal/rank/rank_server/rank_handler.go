@@ -15,7 +15,7 @@ func (r *RankHandler) OnGetRank(ctx context.Context, req *api.GetRankReq) (*api.
 	resp := &api.GetRankResp{}
 	var err error
 	ch := make(chan struct{})
-	r.Rank.GetRank(req.GetMe(), req.GetRankKey(), 0, 10, func(res *RankResult) {
+	r.Rank.GetRank(req.GetMe(), req.GetRankKey(), int64(req.GetBeginRank()), int64(req.GetCount()), func(res *RankResult) {
 		resRankItem := make([]*api.RankItem, 0, len(res.RankList))
 		for _, v := range res.RankList {
 			resRankItem = append(resRankItem, &api.RankItem{
