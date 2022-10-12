@@ -3,6 +3,7 @@ package logic
 import (
 	"flag"
 
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/logic/game"
 	"github.com/junaozun/game_server/internal/logic/nats_handler"
@@ -31,7 +32,7 @@ type LogicApp struct {
 func NewLogicApp() *LogicApp {
 	return &LogicApp{
 		onLineUser: wsMgr.NewWsMgr(),
-		ServerName: "logic",
+		ServerName: common.ServerName_Logic,
 	}
 }
 

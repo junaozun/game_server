@@ -1,4 +1,4 @@
-package rank
+package rank_server
 
 import (
 	"context"
@@ -22,7 +22,6 @@ const (
 
 func TestMain(m *testing.M) {
 	r = NewRank()
-	r.Init(context.Background())
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt)
 	ticker := time.NewTimer(time.Minute)

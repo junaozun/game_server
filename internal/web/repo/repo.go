@@ -13,7 +13,6 @@ type IAccountRepo interface {
 }
 
 type INatsRepo interface {
-	Publish(objectName string, methodName string, req interface{}, opt ...natsx.CallOption) error
-	Request(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}, opt ...natsx.CallOption) error
-	NatsI()
+	Publish(objectName string, serverName string, methodName string, req interface{}, opt ...natsx.CallOption) error
+	Request(ctx context.Context, serverName string, objectName string, methodName string, req interface{}, resp interface{}, opt ...natsx.CallOption) error
 }

@@ -22,6 +22,7 @@ func NewWebRouter(accountCtl *account.AccountCtl) WebRouter {
 		{
 			account.Any("/register", accountCtl.Register)
 			account.Any("/nats_rpc", accountCtl.UseNatsTest)
+			account.Any("/getRankTest", accountCtl.GetRankTest)
 		}
 	}
 }

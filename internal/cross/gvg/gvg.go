@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/internal/cross/gvg/nats_handler"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
@@ -14,13 +15,13 @@ type GvgApp struct {
 
 func NewGvgApp() *GvgApp {
 	return &GvgApp{
-		ServerName: "gvg",
+		ServerName: common.ServerName_Gvg,
 	}
 }
 
-func (c *GvgApp) Run(cfg config.GameConfig) error {
+func (g *GvgApp) Run(cfg config.GameConfig) error {
 	runners := make([]app.Runner, 0)
-	natsxServer := natsx.New(cfg.Common.NATS, c.ServerName)
+	natsxServer := natsx.New(cfg.Common.NATS, g.ServerName)
 	// 注册nats
 	nats_handler.RegisterHandler(natsxServer)
 	runners = append(runners, natsxServer)
@@ -31,7 +32,7 @@ func (c *GvgApp) Run(cfg config.GameConfig) error {
 		app.OnExitHook(func() {
 			logrusx.Log.Info("gvg app exit .....")
 		}),
-		app.Name("gvg"),
+		app.Name(g.ServerName),
 		app.Runners(runners...),
 	)
 	if err := gvg.Run(); err != nil {

@@ -124,6 +124,12 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/junaozun/gogopkg v0.0.0-20221008080824-65c138ab08f9 h1:tqRTQAbCL3NjgyIlcmAgFId/7iS6nlWXH1NwMS+EaGg=
 github.com/junaozun/gogopkg v0.0.0-20221008080824-65c138ab08f9/go.mod h1:+Q0aFwUjKHzbxRgj84jdvV9MjqsOPwwOqG4J6VKnwjk=
+github.com/junaozun/gogopkg v0.0.0-20221011065755-06f4dfa429fa h1:AYrgu6mVlrYseI8nYQp5OroWbY5WTRWujSstDY+doYE=
+github.com/junaozun/gogopkg v0.0.0-20221011065755-06f4dfa429fa/go.mod h1:+Q0aFwUjKHzbxRgj84jdvV9MjqsOPwwOqG4J6VKnwjk=
+github.com/junaozun/gogopkg v0.0.0-20221012025229-71dbcbca72f9 h1:Lk2jSY5iFQvZRzXR0IC7wtxGcjGn/pM06MIuVItVzZk=
+github.com/junaozun/gogopkg v0.0.0-20221012025229-71dbcbca72f9/go.mod h1:+Q0aFwUjKHzbxRgj84jdvV9MjqsOPwwOqG4J6VKnwjk=
+github.com/junaozun/gogopkg v0.0.0-20221012030108-3dc6ea75b431 h1:wKNi59mUWaQW5+OJPx+FoA40LMNKpKwkb0mNkIzogvk=
+github.com/junaozun/gogopkg v0.0.0-20221012030108-3dc6ea75b431/go.mod h1:+Q0aFwUjKHzbxRgj84jdvV9MjqsOPwwOqG4J6VKnwjk=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.15.11 h1:Lcadnb3RKGin4FYM/orgq0qde+nc15E5Cbqg4B9Sx9c=

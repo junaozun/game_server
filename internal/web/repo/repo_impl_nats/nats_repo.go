@@ -18,13 +18,19 @@ func NewNatsRepo(component *component.Component) repo.INatsRepo {
 		commponent: component,
 	}
 }
-func (n *NatsRepo) Publish(objectName string, methodName string, req interface{}, opt ...natsx.CallOption) error {
-	return n.commponent.LogicClient.Publish(objectName, methodName, req, opt...)
-}
-func (n *NatsRepo) Request(ctx context.Context, objectName string, methodName string, req interface{}, resp interface{}, opt ...natsx.CallOption) error {
-	return n.commponent.LogicClient.Request(ctx, objectName, methodName, req, resp, opt...)
+
+func (n *NatsRepo) Publish(objectName string, serverName string, methodName string, req interface{}, opt ...natsx.CallOption) error {
+	client, ok := n.commponent.NatsClient[serverName]
+	if !ok {
+		return fmt.Errorf("not fount natsClient %s", serverName)
+	}
+	return client.Publish(objectName, methodName, req, opt...)
 }
 
-func (n *NatsRepo) NatsI() {
-	fmt.Println("唯一实现，不可调用")
+func (n *NatsRepo) Request(ctx context.Context, serverName string, objectName string, methodName string, req interface{}, resp interface{}, opt ...natsx.CallOption) error {
+	client, ok := n.commponent.NatsClient[serverName]
+	if !ok {
+		return fmt.Errorf("not fount natsClient %s", serverName)
+	}
+	return client.Request(ctx, objectName, methodName, req, resp, opt...)
 }

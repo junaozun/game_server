@@ -1,6 +1,7 @@
 package component
 
 import (
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/gogopkg/config"
 	"github.com/junaozun/gogopkg/dao"
 	"github.com/junaozun/gogopkg/natsx"
@@ -8,10 +9,8 @@ import (
 
 // Component 组件
 type Component struct {
-	Dao         *dao.Dao      // 数据访问层组件（mysql,redis,etcd）
-	LogicClient *natsx.Client // nats 消息中间件组件
-	ChessClient *natsx.Client // nats 消息中间件组件
-	GvgClient   *natsx.Client // nats 消息中间件组件
+	Dao        *dao.Dao                 // 数据访问层组件（mysql,redis,etcd）
+	NatsClient map[string]*natsx.Client // key:serverName   vale:natsClient
 	// kafka // 消息中间件组件
 }
 
@@ -20,22 +19,16 @@ func NewComponent(dao *dao.Dao, cfg config.GameConfig) *Component {
 	if err != nil {
 		panic(err)
 	}
-	logicClient, err := natsx.NewClient(connEnc, "logic")
-	if err != nil {
-		panic(err)
+	component := &Component{
+		Dao:        dao,
+		NatsClient: make(map[string]*natsx.Client),
 	}
-	chessClient, err := natsx.NewClient(connEnc, "chess")
-	if err != nil {
-		panic(err)
+	for _, serverName := range common.ServerNames {
+		client, err := natsx.NewClient(connEnc, serverName)
+		if err != nil {
+			panic(err)
+		}
+		component.NatsClient[serverName] = client
 	}
-	gvgClient, err := natsx.NewClient(connEnc, "gvg")
-	if err != nil {
-		panic(err)
-	}
-	return &Component{
-		Dao:         dao,
-		LogicClient: logicClient,
-		ChessClient: chessClient,
-		GvgClient:   gvgClient,
-	}
+	return component
 }

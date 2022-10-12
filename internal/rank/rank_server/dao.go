@@ -1,4 +1,4 @@
-package rank
+package rank_server
 
 import (
 	"context"

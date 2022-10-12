@@ -1,14 +1,11 @@
-package rank
+package rank_server
 
 import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/junaozun/game_server/internal/rank/nats_handler"
-	"github.com/junaozun/gogopkg/app"
-	"github.com/junaozun/gogopkg/config"
+	"github.com/junaozun/game_server/internal/rank/rankPb"
 	"github.com/junaozun/gogopkg/logrusx"
-	"github.com/junaozun/gogopkg/natsx"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -17,49 +14,22 @@ const (
 )
 
 type Rank struct {
-	ServerName        string
-	snapshotRank      map[string]*RankSnapshot // 排行榜快照 rankKey -> id -> score
-	dirtySnapshotRank map[string]struct{}      // 脏标记
-	db                *Dao                     // redis 数据存储
-	rpc
+	snapshotRank      map[string]*rankPb.RankSnapshot // 排行榜快照 rankKey -> id -> score
+	dirtySnapshotRank map[string]struct{}             // 脏标记
+	db                *Dao                            // redis 数据存储
 }
 
 func NewRank() *Rank {
 	r := &Rank{
-		ServerName:        "rank",
-		snapshotRank:      make(map[string]*RankSnapshot),
+		snapshotRank:      make(map[string]*rankPb.RankSnapshot),
 		dirtySnapshotRank: make(map[string]struct{}),
 		db:                NewDao(),
 	}
 	return r
 }
 
-func (c *Rank) Run(cfg config.GameConfig) error {
-	runners := make([]app.Runner, 0)
-	rankServer := NewRank()
-	rankServer.dirtySnapshotRank
-	natsxServer := natsx.New(cfg.Common.NATS, c.ServerName)
-	// 注册nats
-	nats_handler.RegisterHandler(natsxServer)
-	runners = append(runners, natsxServer)
-	rank := app.New(
-		app.OnBeginHook(func() {
-			logrusx.Log.Info("rank app start .....")
-		}),
-		app.OnExitHook(func() {
-			logrusx.Log.Info("rank app exit .....")
-		}),
-		app.Name(c.ServerName),
-		app.Runners(runners...),
-	)
-	if err := rank.Run(); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Init 启动
-func (r *Rank) Init(ctx context.Context) error {
+func (r *Rank) Start(ctx context.Context) error {
 	return r.loadSnapshotData()
 }
 
@@ -75,7 +45,7 @@ func (r *Rank) loadSnapshotData() error {
 	}
 
 	for rankKey, data := range saveSnapshotRanks {
-		snapshotData := new(RankSnapshot)
+		snapshotData := new(rankPb.RankSnapshot)
 		err := proto.Unmarshal([]byte(data), snapshotData)
 		if err != nil {
 			return err
@@ -101,9 +71,16 @@ func (r *Rank) DeleteRankData(rankKey string, mems ...string) {
 }
 
 type RankResult struct {
-	RankList []*RankItem
-	Me       *RankItem
+	RankList []*rankItem
+	Me       *rankItem
 	Total    int
+}
+
+type rankItem struct {
+	id      string
+	score   int64
+	rank    uint32
+	oldRank uint32
 }
 
 // GetRank 获取排行榜
@@ -118,21 +95,46 @@ func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb f
 	}
 
 	result := &RankResult{
-		Me: &RankItem{
-			Id:    me,
-			Score: meScore,
-			Rank:  uint32(meRank),
+		Me: &rankItem{
+			id:    me,
+			score: meScore,
+			rank:  uint32(meRank),
 		},
 	}
-	r.db.asyncRedis.ZRevRange(rankKey, start, start+count-1, func(res []redis.Z, err error) {
-		for rank, data := range res {
-			result.RankList = append(result.RankList, &RankItem{
-				Id:    data.Member.(string),
-				Score: int64(data.Score),
-				Rank:  uint32(rank),
-			})
+	r.db.asyncRedis.ZRevRank(rankKey, me, func(meRank int64, err error) {
+		if err != nil {
+			logrusx.Log.WithFields(logrusx.Fields{
+				"me": me,
+			}).Error("zrevrank err")
+			cb(nil)
+			return
 		}
-		cb(result)
-		return
+		merank := meRank
+		r.db.asyncRedis.ZScore(rankKey, me, func(meSocre float64, err error) {
+			if err != nil {
+				logrusx.Log.WithFields(logrusx.Fields{
+					"me": me,
+				}).Error("zscore err")
+				cb(nil)
+				return
+			}
+			mescore := meSocre
+			r.db.asyncRedis.ZRevRange(rankKey, start, start+count-1, func(res []redis.Z, err error) {
+				for rank, data := range res {
+					result.RankList = append(result.RankList, &rankItem{
+						id:    data.Member.(string),
+						score: int64(data.Score),
+						rank:  uint32(rank),
+					})
+				}
+				result.Me = &rankItem{
+					id:    me,
+					score: int64(mescore),
+					rank:  uint32(merank),
+				}
+				cb(result)
+				return
+			})
+		})
 	})
 }

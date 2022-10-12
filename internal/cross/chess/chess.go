@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/internal/cross/chess/nats_handler"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
@@ -14,7 +15,7 @@ type ChessApp struct {
 
 func NewChessApp() *ChessApp {
 	return &ChessApp{
-		ServerName: "chess",
+		ServerName: common.ServerName_Chess,
 	}
 }
 

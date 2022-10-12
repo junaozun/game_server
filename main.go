@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/junaozun/game_server/internal/gate"
+	"github.com/junaozun/game_server/internal/rank"
 	"github.com/junaozun/game_server/internal/web"
 	"github.com/junaozun/gogopkg/config"
 	"github.com/junaozun/gogopkg/logrusx"
@@ -45,6 +46,7 @@ func main() {
 	go pvp.NewPvpApp().Run(cfg)
 	go web.NewWebApp(cfg).Run()
 	go gate.NewGateWay().Run(cfg)
+	go rank.NewRankApp().Run(cfg)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt)
 	ticker := time.NewTimer(time.Minute)

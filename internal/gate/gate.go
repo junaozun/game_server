@@ -1,6 +1,7 @@
 package gate
 
 import (
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/gogopkg/app"
 	"github.com/junaozun/gogopkg/config"
@@ -19,7 +20,7 @@ type GateApp struct {
 
 func NewGateWay() *GateApp {
 	return &GateApp{
-		ServerName: "gateway",
+		ServerName: common.ServerName_Gate,
 		Router:     ws.NewRouter(),
 		Handler:    NewHandler(),
 	}

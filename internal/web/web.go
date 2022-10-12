@@ -1,6 +1,7 @@
 package web
 
 import (
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/web/wire"
 	"github.com/junaozun/gogopkg/app"
@@ -11,6 +12,7 @@ import (
 )
 
 type WebApp struct {
+	ServerName  string
 	httpxServer *httpx.HttpxServer
 }
 
@@ -26,6 +28,7 @@ func NewWebApp(cfg config.GameConfig) *WebApp {
 		panic(err)
 	}
 	return &WebApp{
+		ServerName:  common.ServerName_Web,
 		httpxServer: httpServer,
 	}
 }
@@ -42,7 +45,7 @@ func (w *WebApp) Run() error {
 				"addr": w.httpxServer.Addr,
 			}).Info("web app exit .....")
 		}),
-		app.Name("web"),
+		app.Name(w.ServerName),
 		app.Runners(w.httpxServer),
 	)
 	if err := web.Run(); err != nil {

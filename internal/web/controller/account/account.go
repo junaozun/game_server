@@ -57,3 +57,13 @@ func (ctl *AccountCtl) UseNatsTest(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ret.OK.WithData(r))
 }
+
+func (ctl *AccountCtl) GetRankTest(c *gin.Context) {
+	ctx := c.Request.Context()
+	resp, err := ctl.NatsService.GetRankTest(ctx, "area")
+	if err != nil {
+		c.JSON(http.StatusOK, ret.Err_Param)
+		return
+	}
+	c.JSON(http.StatusOK, ret.OK.WithData(resp))
+}
