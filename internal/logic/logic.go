@@ -42,7 +42,7 @@ func (l *LogicApp) Run(cfg config.GameConfig) error {
 	if err != nil {
 		panic(err)
 	}
-	wsServer := ws.NewWsServer(host+cfg.Logic.Port, ws.NewRouter())
+	wsServer := ws.NewWsServer(host+cfg.Logic.Port, ws.NewRouter(), false)
 	// 初始化游戏玩法
 	game.NewGame(component.NewComponent(dao, cfg), wsServer.ServerRouter, l.onLineUser)
 

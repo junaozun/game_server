@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	rankSnapshotKey = "cross:rank:snapshot" // 排行榜快照数据，用于对比昨日排名
+	rankSnapshotKey = "rank:snapshot" // 排行榜快照数据，用于对比昨日排名
 )
 
 type Rank struct {
@@ -122,4 +122,9 @@ func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb f
 			})
 		})
 	})
+}
+
+// SaveSnapshotRank 存排行榜快照
+func (r *Rank) SaveSnapshotRank() {
+
 }

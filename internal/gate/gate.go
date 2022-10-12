@@ -30,7 +30,7 @@ func (g *GateApp) Run(cfg config.GameConfig) error {
 	g.Handler.SetLoginProxy(cfg.GateWay.LoginProxy)
 	g.Handler.SetLogicProxy(cfg.GateWay.LogicProxy)
 	g.InitRouter()
-	wsServer := ws.NewWsServer(host+cfg.GateWay.Port, g.Router)
+	wsServer := ws.NewWsServer(host+cfg.GateWay.Port, g.Router, true)
 	gate := app.New(
 		app.OnBeginHook(func() {
 			logrusx.Log.WithFields(logrusx.Fields{

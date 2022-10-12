@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
+	"github.com/junaozun/game_server/ret"
+	"github.com/junaozun/gogopkg/logrusx"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -26,7 +28,7 @@ func NewProxyClient(proxy string) *ProxyClient {
 	}
 }
 
-func (p *ProxyClient) Connect() error {
+func (p *ProxyClient) ConnectServer() error {
 	// 去连接对应的websocket服务端（可能是login server，也可能是logic server）
 	var dialer = websocket.Dialer{
 		HandshakeTimeout: 30 * time.Second,
@@ -45,33 +47,56 @@ func (p *ProxyClient) Connect() error {
 	return nil
 }
 
-type syncCtx struct {
-	ctx     context.Context // goroutine 的上下文，包含goroutine的运行状态、环境、现场等信息
-	cancel  context.CancelFunc
-	outChan chan *ws.RespBody
+func (p *ProxyClient) SetProperty(key string, data interface{}) {
+	if p.conn.isClosed {
+		return
+	}
+	p.conn.SetProperty(key, data)
 }
 
-func NewSyncCtx() *syncCtx {
+func (p *ProxyClient) OnPush(push func(conn *ClientConn, body *ws.RespBody)) {
+	if p.conn.isClosed {
+		return
+	}
+	p.conn.SetOnPush(push)
+}
+
+func (p *ProxyClient) Send(router string, msg interface{}) (*ws.RespBody, error) {
+	if p.conn.isClosed {
+		return nil, fmt.Errorf("conn closed")
+	}
+	return p.conn.Send(router, msg)
+}
+
+// 请求对应的返回
+type seqReqRespSync struct {
+	ctx     context.Context // goroutine 的上下文，包含goroutine的运行状态、环境、现场等信息
+	cancel  context.CancelFunc
+	outChan chan *ws.RespBody // 接受logic，login server发来数据的通道
+}
+
+func NewSeqReqRespSync() *seqReqRespSync {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	return &syncCtx{
+	return &seqReqRespSync{
 		ctx:     ctx,
 		cancel:  cancel,
 		outChan: make(chan *ws.RespBody),
 	}
 }
 
-func (s *syncCtx) wait() *ws.RespBody {
+func (s *seqReqRespSync) wait() *ws.RespBody {
 	select {
 	case msg := <-s.outChan:
 		return msg
 	case <-s.ctx.Done():
-		log.Println("代理服务响应消息超时")
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("代理服务器响应超时")
 		return nil
 	}
 }
 
+// ClientConn 某个用户的客户端连接数据
 type ClientConn struct {
-	wsConn        *websocket.Conn // logic 的长链接
+	wsConn        *websocket.Conn // logic ,login 的长链接
 	isClosed      bool            // 监听当前客户端是否关闭状态
 	handshake     bool            // 握手状态
 	handshakeChan chan struct{}   // 接受握手成功信息的通道
@@ -80,7 +105,7 @@ type ClientConn struct {
 	Seq           int64
 	onPush        func(conn *ClientConn, body *ws.RespBody)
 	onClose       func(conn *ClientConn)
-	syncCtxMap    map[int64]*syncCtx
+	syncCtxMap    map[int64]*seqReqRespSync // seq-> 该序号请求对应的返回
 	syncCtxMutex  sync.RWMutex
 }
 
@@ -89,7 +114,7 @@ func NewClientConn(conn *websocket.Conn) *ClientConn {
 		wsConn:        conn,
 		handshakeChan: make(chan struct{}),
 		property:      make(map[string]interface{}),
-		syncCtxMap:    make(map[int64]*syncCtx),
+		syncCtxMap:    make(map[int64]*seqReqRespSync),
 	}
 }
 
@@ -205,7 +230,7 @@ func (c *ClientConn) wsReadLoop() {
 				}
 				c.handshake = true
 				c.handshakeChan <- struct{}{}
-			} else {
+			} else { // seq == 0却不是握手数据，将logic传来的数据原封不动传递给客户端
 				if c.onPush != nil {
 					c.onPush(c, respBody)
 				} else {
@@ -219,7 +244,7 @@ func (c *ClientConn) wsReadLoop() {
 			if ok {
 				ctx.outChan <- respBody
 			} else {
-				log.Println("no seq syncCtx find")
+				log.Println("no seq seqReqRespSync find")
 			}
 		}
 
@@ -231,43 +256,81 @@ func (c *ClientConn) Close() {
 	_ = c.wsConn.Close()
 }
 
-func (c *ClientConn) write(body interface{}) {
+func (c *ClientConn) write(body interface{}) error {
 	data, err := json.Marshal(body)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
-	secretKey, ok := c.GetProperty(ws.SecretKey)
-	if !ok {
-		log.Println("未设置secretKey值")
-		return
-	}
-	key := secretKey.(string)
-	// 对数据加密
-	encryptData, err := utils.AesCBCEncrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// gateway 发往logic，login服务器的数据不需要加密
+	// secretKey, ok := c.GetProperty(ws.SecretKey)
+	// if !ok {
+	// 	log.Println("未设置secretKey值")
+	// 	return err
+	// }
+	// key := secretKey.(string)
+	// // 对数据加密
+	// data, err = utils.AesCBCEncrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return err
+	// }
 	// 再对数据进行压缩
-	zipData, err := utils.Zip(encryptData)
+	zipData, err := utils.Zip(data)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
 	err = c.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 	log.Println("[wsServer] write2Client success")
+	return nil
 }
 
-func (c *ClientConn) SetOnPush(hookFunc func(conn *ClientConn, body *ws.RespBody)) {
-	c.onPush = hookFunc
+func (c *ClientConn) SetOnPush(push func(conn *ClientConn, body *ws.RespBody)) {
+	c.onPush = push
 }
 
-func (c *ClientConn) Send(name string, msg interface{}) (*ws.RespBody, error) {
+// Send gateway将请求发送给login,logic服务器,等待返回
+func (c *ClientConn) Send(router string, msg interface{}) (*ws.RespBody, error) {
 	c.syncCtxMutex.Lock()
 	c.Seq++
-	return nil, nil
+	seq := c.Seq
+	sc := NewSeqReqRespSync()
+	c.syncCtxMap[seq] = sc
+	c.syncCtxMutex.Unlock()
+
+	req := &ws.ReqBody{
+		Seq:    seq,
+		Router: router,
+		Msg:    msg,
+	}
+
+	rsp := &ws.RespBody{
+		Seq:    seq,
+		Router: router,
+		Code:   ret.OK.Code,
+	}
+	// 将数据写入logic,login 服务器
+	err := c.write(req)
+	if err != nil {
+		sc.cancel()
+	} else {
+		// 然后等待服务器的返回数据
+		r := sc.wait()
+		if r == nil {
+			rsp.Code = ret.Err_ProxyConnect.Code
+		} else {
+			rsp = r
+		}
+	}
+
+	// 该请求处理完成，将请求删除
+	c.syncCtxMutex.Lock()
+	delete(c.syncCtxMap, seq)
+	c.syncCtxMutex.Unlock()
+	return rsp, nil
 }

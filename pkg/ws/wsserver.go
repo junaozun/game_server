@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"sync/atomic"
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
 	"github.com/junaozun/game_server/pkg/utils"
 )
+
+var cid int64
 
 const SecretKey = "secretKey"
 
@@ -20,15 +23,20 @@ type wsServer struct {
 	property     map[string]interface{} //
 	propertyLock sync.RWMutex
 	closeWrite   chan struct{}
+	needSecret   bool
 }
 
-func newWsServer(wsConn *websocket.Conn) *wsServer {
-	return &wsServer{
+func newWsServer(wsConn *websocket.Conn, needSecret bool) *wsServer {
+	atomic.AddInt64(&cid, 1)
+	s := &wsServer{
 		wsConn:     wsConn,
 		outChan:    make(chan *WsMsgResp, 1000),
 		property:   make(map[string]interface{}),
 		closeWrite: make(chan struct{}),
+		needSecret: needSecret,
 	}
+	s.SetProperty("cid", cid)
+	return s
 }
 
 func (w *wsServer) addRouter(router *Router) {
@@ -115,21 +123,24 @@ func (w *wsServer) readMsgLoop() {
 			continue
 		}
 		// 2 前端的消息  加密消息 进行解密
-		secretKey, ok := w.GetProperty(SecretKey)
-		if !ok {
-			log.Println("未设置secretKey值")
-			continue
+		if w.needSecret {
+			secretKey, ok := w.GetProperty(SecretKey)
+			if !ok {
+				log.Println("未设置secretKey值")
+				continue
+			}
+			key := secretKey.(string)
+			// 客户端传过来的数据是加密的，需要解密
+			realData, err := utils.AesCBCDecrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
+			if err != nil {
+				log.Println("数据格式有误，解密失败：", err)
+				// 出错后发起握手
+				w.handshake()
+				continue
+			}
+			data = realData
 		}
-		key := secretKey.(string)
-		// 客户端传过来的数据是加密的，需要解密
-		realData, err := utils.AesCBCDecrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
-		if err != nil {
-			log.Println("数据格式有误，解密失败：", err)
-			// 出错后发起握手
-			w.handshake()
-			continue
-		}
-		data = realData
+
 		// 3.data 转为body
 		reqBody := &ReqBody{}
 		err = json.Unmarshal(data, reqBody)

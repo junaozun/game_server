@@ -10,8 +10,8 @@ import (
 // Component 组件
 type Component struct {
 	Dao        *dao.Dao                 // 数据访问层组件（mysql,redis,etcd）
-	NatsClient map[string]*natsx.Client // key:serverName   vale:natsClient
-	// kafka // 消息中间件组件
+	NatsClient map[string]*natsx.Client // serverName:natsClient
+	// kafkaClient  kafka // 消息中间件组件
 }
 
 func NewComponent(dao *dao.Dao, cfg config.GameConfig) *Component {
