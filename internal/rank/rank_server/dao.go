@@ -7,7 +7,7 @@ import (
 )
 
 type Dao struct {
-	asyncRedis *redisx.AsyncClient
+	asyncClient *redisx.AsyncClient
 }
 
 func NewDao() *Dao {
@@ -27,12 +27,12 @@ func NewDao() *Dao {
 	}
 	asyncClient := redisx.NewAsync(client, redisx.WithPushFunc(pushFunc))
 	return &Dao{
-		asyncRedis: asyncClient,
+		asyncClient: asyncClient,
 	}
 }
 
 func (d *Dao) LoadHashAllStringBytesSync(key string) (map[string]string, error) {
-	res, err := d.asyncRedis.Sync().HGetAll(key)
+	res, err := d.asyncClient.Sync().HGetAll(key)
 	if err != nil {
 		return nil, err
 	}

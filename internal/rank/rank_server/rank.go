@@ -34,7 +34,7 @@ func (r *Rank) Start(ctx context.Context) error {
 }
 
 func (r *Rank) Stop(ctx context.Context) error {
-	return r.db.asyncRedis.Stop(ctx)
+	return r.db.asyncClient.Stop(ctx)
 }
 
 // 加载昨日排行榜快照
@@ -57,17 +57,17 @@ func (r *Rank) loadSnapshotData() error {
 
 // AddRankScore 更新单个排行榜，score 增加
 func (r *Rank) AddRankScore(rankKey string, rankData map[string]int) {
-	r.db.asyncRedis.ZIncrby(rankKey, rankData)
+	r.db.asyncClient.ZIncrby(rankKey, rankData)
 }
 
 // UpdateRankScore 更新单个排行榜，score直接替换
 func (r *Rank) UpdateRankScore(rankKey string, rankData map[string]float64) {
-	r.db.asyncRedis.ZAdd(rankKey, rankData)
+	r.db.asyncClient.ZAdd(rankKey, rankData)
 }
 
 // DeleteRankData 删除排行榜中指定成员
 func (r *Rank) DeleteRankData(rankKey string, mems ...string) {
-	r.db.asyncRedis.ZRem(rankKey, mems...)
+	r.db.asyncClient.ZRem(rankKey, mems...)
 }
 
 type RankResult struct {
@@ -86,7 +86,7 @@ type rankItem struct {
 // GetRank 获取排行榜
 func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb func(*RankResult)) {
 	result := &RankResult{}
-	r.db.asyncRedis.ZRevRank(rankKey, me, func(meRank int64, err error) {
+	r.db.asyncClient.ZRevRank(rankKey, me, func(meRank int64, err error) {
 		if err != nil {
 			logrusx.Log.WithFields(logrusx.Fields{
 				"me": me,
@@ -95,7 +95,7 @@ func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb f
 			return
 		}
 		merank := meRank
-		r.db.asyncRedis.ZScore(rankKey, me, func(meSocre float64, err error) {
+		r.db.asyncClient.ZScore(rankKey, me, func(meSocre float64, err error) {
 			if err != nil {
 				logrusx.Log.WithFields(logrusx.Fields{
 					"me": me,
@@ -104,7 +104,7 @@ func (r *Rank) GetRank(me string, rankKey string, start int64, count int64, cb f
 				return
 			}
 			mescore := meSocre
-			r.db.asyncRedis.ZRevRange(rankKey, start, start+count-1, func(res []redis.Z, err error) {
+			r.db.asyncClient.ZRevRange(rankKey, start, start+count-1, func(res []redis.Z, err error) {
 				for rank, data := range res {
 					result.RankList = append(result.RankList, &rankItem{
 						id:    data.Member.(string),
