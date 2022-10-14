@@ -1,12 +1,14 @@
 package gate
 
 import (
-	"log"
 	"strings"
+	"time"
 
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
 	"github.com/junaozun/gogopkg/logrusx"
+	"github.com/mitchellh/mapstructure"
 )
 
 func (g *GateApp) InitRouter() {
@@ -14,8 +16,19 @@ func (g *GateApp) InitRouter() {
 }
 
 func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
-	log.Println("客户端请求到达gateway....")
+	logrusx.Log.WithFields(logrusx.Fields{}).Info("[GateApp] routerForward 客户端请求到达gateway....")
+	rsp.Body.Seq = req.Body.Seq
+	rsp.Body.Router = req.Body.Router
+	rsp.Body.Code = ret.OK.Code
+
 	routerName := req.Body.Router
+	if routerName == common.HearbeatMsg {
+		h := &ws.Hearbeat{}
+		mapstructure.Decode(req.Body.Msg, h)
+		h.ServerTime = time.Now().UnixNano() / 1e6
+		rsp.Body.Msg = h
+		return
+	}
 	var proxyAddr string
 	if isAccount(routerName) {
 		proxyAddr = g.Handler.GetLoginProxy()
@@ -34,15 +47,16 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		rsp.Body.Code = ret.Err_Param.Code
 		return
 	}
-	cid := c.(int)
+	cid := c.(int64)
 
-	mapClient := g.Handler.GetProxyMap(proxyAddr)
-	proxyClient, ok := mapClient[cid]
+	proxyClients := g.Handler.GetProxyMap(proxyAddr)
+	// 获取该客户端与logic或login的ws连接
+	proxyClient, ok := proxyClients[cid]
+	// 没有找到，则新建立链接
 	if !ok {
 		proxyClient = NewProxyClient(proxyAddr)
 		err := proxyClient.ConnectServer()
 		if err != nil {
-			g.Handler.DeleteCid(proxyAddr, cid)
 			logrusx.Log.WithFields(logrusx.Fields{}).Error("[GateApp] routerForward proxyClient.ConnectServer err")
 			rsp.Body.Code = ret.Err_ProxyConnect.Code
 			return
@@ -54,9 +68,7 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		proxyClient.SetProperty("clientConn", req.Conn)
 		proxyClient.OnPush(g.Handler.OnPush)
 	}
-	// 给loginc or login server 发送数据
-	rsp.Body.Seq = req.Body.Seq
-	rsp.Body.Router = req.Body.Router
+	// 给logic or login server 发送数据
 	r, err := proxyClient.Send(req.Body.Router, req.Body.Msg)
 	if err != nil {
 		rsp.Body.Code = ret.Err_ProxyConnect.Code

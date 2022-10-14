@@ -8,6 +8,7 @@ import (
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/mitchellh/mapstructure"
@@ -41,7 +42,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if body.Router == ws.HandshakeMsg {
+		if body.Router == common.HandshakeMsg {
 			err := mapstructure.Decode(body.Msg, handshake)
 			if err != nil {
 				log.Println("Decode err")

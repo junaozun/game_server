@@ -1,8 +1,6 @@
 package game
 
 import (
-	"log"
-
 	"github.com/junaozun/game_server/component"
 	"github.com/junaozun/game_server/internal/logic/model"
 	"github.com/junaozun/game_server/internal/logic/wsMgr"
@@ -44,7 +42,6 @@ func (g *Game) initTable() {
 		new(model.LoginLast),
 	)
 	if err != nil {
-		log.Printf("[game] initTable err:%s", err.Error())
 		panic(err)
 	}
 }

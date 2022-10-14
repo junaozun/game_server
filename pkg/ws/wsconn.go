@@ -31,8 +31,11 @@ type IWsConn interface {
 	Push(name string, data interface{})
 }
 
-const HandshakeMsg = "handshake"
-
 type Handshake struct {
 	Key string `json:"key"`
+}
+
+type Hearbeat struct {
+	ClientTime int64 `json:"ctime"` // 客户端发来的时间
+	ServerTime int64 `json:"sTime"` // gateway返回客户端的时间
 }

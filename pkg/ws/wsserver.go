@@ -8,7 +8,9 @@ import (
 
 	"github.com/forgoer/openssl"
 	"github.com/gorilla/websocket"
+	"github.com/junaozun/game_server/common"
 	"github.com/junaozun/game_server/pkg/utils"
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 var cid int64
@@ -20,22 +22,27 @@ type wsServer struct {
 	router       *Router
 	outChan      chan *WsMsgResp // 回复给客户端的信息
 	seq          int64
-	property     map[string]interface{} //
+	property     map[string]interface{} // SecretKey:secretKey 、 Cid:cid
 	propertyLock sync.RWMutex
 	closeWrite   chan struct{}
-	needSecret   bool
+	isGateway    bool
 }
 
-func newWsServer(wsConn *websocket.Conn, needSecret bool) *wsServer {
-	atomic.AddInt64(&cid, 1)
+func newWsServer(wsConn *websocket.Conn, isGateway bool) *wsServer {
 	s := &wsServer{
 		wsConn:     wsConn,
 		outChan:    make(chan *WsMsgResp, 1000),
 		property:   make(map[string]interface{}),
 		closeWrite: make(chan struct{}),
-		needSecret: needSecret,
+		isGateway:  isGateway,
 	}
-	s.SetProperty("cid", cid)
+	if isGateway {
+		atomic.AddInt64(&cid, 1)
+		// 将自己的cid号设置上
+		s.SetProperty("cid", cid)
+		// 发送握手协议
+		s.handshake()
+	}
 	return s
 }
 
@@ -66,13 +73,13 @@ func (w *wsServer) Addr() string {
 	return w.wsConn.RemoteAddr().String()
 }
 
-func (w *wsServer) Push(router string, data interface{}) {
+func (w *wsServer) Push(router string, msg interface{}) {
 	resp := &WsMsgResp{
 		Body: &RespBody{
 			Seq:    0,
 			Router: router,
 			Code:   0,
-			Msg:    data,
+			Msg:    msg,
 		},
 	}
 	w.outChan <- resp
@@ -108,7 +115,7 @@ func (w *wsServer) readMsgLoop() {
 		}
 	}()
 
-	// 先读到客户端发送过来的数据，然后进行处理，再发送回给客户端消息
+	// 先读到链接发送过来的数据，然后进行处理，再发送回给客户端消息
 	for {
 		_, data, err := w.wsConn.ReadMessage()
 		if err != nil {
@@ -123,7 +130,8 @@ func (w *wsServer) readMsgLoop() {
 			continue
 		}
 		// 2 前端的消息  加密消息 进行解密
-		if w.needSecret {
+		// gateway接受client的消息，需要解密;login或logic server接受gateway的消息，不需要解密
+		if w.isGateway {
 			secretKey, ok := w.GetProperty(SecretKey)
 			if !ok {
 				log.Println("未设置secretKey值")
@@ -148,6 +156,7 @@ func (w *wsServer) readMsgLoop() {
 			log.Println("数据解析失败", err)
 			continue
 		}
+
 		// 获取到前端传递的数据了，拿上这些数据 去具体的业务进行处理
 		wsReq := &WsMsgReq{
 			Body: reqBody,
@@ -170,32 +179,38 @@ func (w *wsServer) readMsgLoop() {
 func (w *wsServer) write2Client(resp interface{}) {
 	data, err := json.Marshal(resp)
 	if err != nil {
-		log.Println(err)
+		logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] write2Client json marshal err")
 		return
 	}
-	secretKey, ok := w.GetProperty(SecretKey)
-	if !ok {
-		log.Println("未设置secretKey值")
-		return
+	logrusx.Log.WithFields(logrusx.Fields{"data": string(data), "isGateway": w.isGateway}).Info("[wsServer] write2Client replay data")
+	// gateway服务器写回客户端的数据需要加密，logic或login 服务器写回gateway的数据只需要压缩就行了
+	if w.isGateway {
+		secretKey, ok := w.GetProperty(SecretKey)
+		if !ok {
+			logrusx.Log.WithFields(logrusx.Fields{}).Error("[wsServer] write2Client gateway 未设置secretKey值")
+			return
+		}
+		key := secretKey.(string)
+		// 对数据加密
+		data, err = utils.AesCBCEncrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
+		if err != nil {
+			logrusx.Log.WithFields(logrusx.Fields{"err": err}).Error("[wsServer] write2Client gateway 数据加密错误")
+			return
+		}
 	}
-	key := secretKey.(string)
-	// 对数据加密
-	encryptData, err := utils.AesCBCEncrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+
 	// 再对数据进行压缩
-	zipData, err := utils.Zip(encryptData)
+	zipData, err := utils.Zip(data)
 	if err != nil {
-		log.Println(err)
+		logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] write2Client zip err")
 		return
 	}
 	err = w.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	if err != nil {
-		log.Println(err)
+		logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] write2Client writeConn err")
+	} else {
+		logrusx.Log.WithFields(logrusx.Fields{"isGateway": w.isGateway}).Info("[wsServer] write2Client success")
 	}
-	log.Println("[wsServer] write2Client success")
 }
 
 // Handshake 握手协议
@@ -203,6 +218,7 @@ func (w *wsServer) write2Client(resp interface{}) {
 // 当游戏客户端 发送请求前先进性一次握手协议、
 // 后端会发送对应的加密key给客户端
 // 客户端在发送数据的时候，就会使用此key进行加密处理
+// 握手协议用于gateway，gateway将SecretKey发送给客户端，并自己存下
 func (w *wsServer) handshake() {
 	secretKey := utils.RandSeq(16)
 	key, ok := w.GetProperty(SecretKey)
@@ -210,7 +226,7 @@ func (w *wsServer) handshake() {
 		secretKey = key.(string)
 	}
 	handshake := &Handshake{Key: secretKey}
-	body := &RespBody{Router: HandshakeMsg, Msg: handshake}
+	body := &RespBody{Router: common.HandshakeMsg, Msg: handshake}
 
 	data, err := json.Marshal(body)
 	if err != nil {

@@ -12,14 +12,14 @@ import (
 type WsServer struct {
 	*http.Server
 	ServerRouter *Router
-	needSecret   bool
+	isGateway    bool
 }
 
-func NewWsServer(addr string, router *Router, needSecret bool) *WsServer {
+func NewWsServer(addr string, router *Router, isGateway bool) *WsServer {
 	return &WsServer{
 		Server:       &http.Server{Addr: addr},
 		ServerRouter: router,
-		needSecret:   needSecret,
+		isGateway:    isGateway,
 	}
 }
 
@@ -54,9 +54,7 @@ func (s *WsServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	// websocket通道建立之后 不管是客户端还是服务端 都可以收发消息
 	// 发消息的时候把消息当做路由来处理 消息是有格式的 先定义消息的格式
 	// 客户端发消息的时候 {Name:"account.login"} 收到之后进行解析，认为想要处理登录逻辑
-	wsServer := newWsServer(wsConn, s.needSecret)
+	wsServer := newWsServer(wsConn, s.isGateway)
 	wsServer.addRouter(s.ServerRouter)
 	wsServer.start()
-	// 发送握手协议
-	wsServer.handshake()
 }

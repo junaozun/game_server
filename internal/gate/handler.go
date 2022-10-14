@@ -9,14 +9,14 @@ import (
 
 type Handler struct {
 	mutex      sync.RWMutex
-	proxyMap   map[string]map[int]*ProxyClient // 代理地址（logic or login)->客户端ID->该客户端的链接通道
+	proxyMap   map[string]map[int64]*ProxyClient // 代理地址（logic or login)->客户端ID(cid)->该客户端的链接通道
 	loginProxy string
 	logicProxy string
 }
 
 func NewHandler() *Handler {
 	return &Handler{
-		proxyMap: make(map[string]map[int]*ProxyClient),
+		proxyMap: make(map[string]map[int64]*ProxyClient),
 	}
 }
 
@@ -36,24 +36,24 @@ func (h *Handler) GetLogicProxy() string {
 	return h.logicProxy
 }
 
-func (h *Handler) GetProxyMap(proxyAddr string) map[int]*ProxyClient {
+func (h *Handler) GetProxyMap(proxyAddr string) map[int64]*ProxyClient {
 	h.mutex.Lock()
 	v, ok := h.proxyMap[proxyAddr]
 	if !ok {
-		v = make(map[int]*ProxyClient)
+		v = make(map[int64]*ProxyClient)
 		h.proxyMap[proxyAddr] = v
 	}
 	h.mutex.Unlock()
 	return v
 }
 
-func (h *Handler) SetProxyMapValue(proxyAddr string, fieldKey int, fieldValue *ProxyClient) {
+func (h *Handler) SetProxyMapValue(proxyAddr string, fieldKey int64, fieldValue *ProxyClient) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 	h.proxyMap[proxyAddr][fieldKey] = fieldValue
 }
 
-func (h *Handler) DeleteCid(proxyAddr string, cid int) {
+func (h *Handler) DeleteCid(proxyAddr string, cid int64) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 	delete(h.proxyMap[proxyAddr], cid)
