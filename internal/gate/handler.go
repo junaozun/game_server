@@ -59,12 +59,14 @@ func (h *Handler) DeleteCid(proxyAddr string, cid int64) {
 	delete(h.proxyMap[proxyAddr], cid)
 }
 
-func (h *Handler) OnPush(conn *ClientConn, body *ws.RespBody) {
+func (h *Handler) OnPushClient(conn *ClientConn, body *ws.RespBody) {
 	clientConn, ok := conn.GetProperty("clientConn")
 	if !ok {
-		logrusx.Log.WithFields(logrusx.Fields{}).Error("[handler] OnPush getProperty clientConn not found")
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("[handler] OnPushClient getProperty clientConn not found")
 		return
 	}
-	cc, ok := clientConn.(ws.IWsConn)
-	cc.Push(body.Router, body.Msg)
+	client, ok := clientConn.(ws.IWsConn)
+	if ok {
+		client.Push(body.Router, body.Msg)
+	}
 }

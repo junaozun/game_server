@@ -14,7 +14,6 @@ import (
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
 	"github.com/junaozun/gogopkg/logrusx"
-	"github.com/mitchellh/mapstructure"
 )
 
 type ProxyClient struct {
@@ -55,7 +54,7 @@ func (p *ProxyClient) SetProperty(key string, data interface{}) {
 	p.conn.SetProperty(key, data)
 }
 
-func (p *ProxyClient) OnPush(push func(conn *ClientConn, body *ws.RespBody)) {
+func (p *ProxyClient) OnPushClient(push func(conn *ClientConn, body *ws.RespBody)) {
 	if p.conn.isClosed {
 		return
 	}
@@ -97,25 +96,25 @@ func (s *seqReqRespSync) wait() *ws.RespBody {
 
 // ClientConn 某个用户的客户端连接数据
 type ClientConn struct {
-	wsConn        *websocket.Conn        // logic ,login 的长链接
+	logicWsConn   *websocket.Conn        // gateway与logic的长链接
 	isClosed      bool                   // 监听当前客户端是否关闭状态
-	handshake     bool                   // 握手状态
-	handshakeChan chan struct{}          // 接受握手成功信息的通道
-	property      map[string]interface{} //
+	sayHai        bool                   // 握手状态
+	sayHaiChan    chan struct{}          // 与logic连接成功的信息通道
+	property      map[string]interface{} // cid:cid ; proxyAddr:proxyAddr ; clientConn:clientConn
 	propertyMutex sync.RWMutex
 	Seq           int64
-	onPush        func(conn *ClientConn, body *ws.RespBody)
+	onPushClient  func(conn *ClientConn, body *ws.RespBody)
 	onClose       func(conn *ClientConn)
-	syncCtxMap    map[int64]*seqReqRespSync // seq-> 该序号请求对应的返回
+	seqToResp     map[int64]*seqReqRespSync // seq-> 该序号请求对应的返回
 	syncCtxMutex  sync.RWMutex
 }
 
 func NewClientConn(conn *websocket.Conn) *ClientConn {
 	return &ClientConn{
-		wsConn:        conn,
-		handshakeChan: make(chan struct{}),
-		property:      make(map[string]interface{}),
-		syncCtxMap:    make(map[int64]*seqReqRespSync),
+		logicWsConn: conn,
+		sayHaiChan:  make(chan struct{}),
+		property:    make(map[string]interface{}),
+		seqToResp:   make(map[int64]*seqReqRespSync),
 	}
 }
 
@@ -139,7 +138,7 @@ func (c *ClientConn) RemoveProperty(key string) {
 }
 
 func (c *ClientConn) Addr() string {
-	return c.wsConn.RemoteAddr().String()
+	return c.logicWsConn.RemoteAddr().String()
 }
 
 func (c *ClientConn) Push(router string, data interface{}) {
@@ -156,21 +155,21 @@ func (c *ClientConn) Push(router string, data interface{}) {
 
 func (c *ClientConn) Start() bool {
 	// 做的事情，就是一直不停的接受消息
-	// 等待服务器握手的消息返回
+	// 等待服务器sayHai的消息返回
 	go c.wsReadLoop()
-	return c.waitHandShake()
+	return c.waitSayHai()
 }
 
-func (c *ClientConn) waitHandShake() bool {
-	// 等待握手的成功 等待握手的消息
+func (c *ClientConn) waitSayHai() bool {
+	// 等待logic服务器回复sayHai消息
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	select {
-	case <-c.handshakeChan:
-		log.Println("握手成功")
+	case <-c.sayHaiChan:
+		logrusx.Log.WithFields(logrusx.Fields{}).Info("[gateway] ClientConn waitSayHai form logic server success")
 		return true
-	case <-ctx.Done():
-		log.Println("握手超时")
+	case err := <-ctx.Done():
+		logrusx.Log.WithFields(logrusx.Fields{"err": err}).Info("[gateway] ClientConn waitSayHai form logic server timeout")
 		return false
 	}
 }
@@ -184,7 +183,7 @@ func (c *ClientConn) wsReadLoop() {
 		}
 	}()
 	for {
-		_, data, err := c.wsConn.ReadMessage()
+		_, data, err := c.logicWsConn.ReadMessage()
 		if err != nil {
 			continue
 		}
@@ -192,7 +191,7 @@ func (c *ClientConn) wsReadLoop() {
 		// 1 data解压 unzip
 		data, err = utils.UnZip(data)
 		if err != nil {
-			log.Println("解压数据出错，非法格式,需要json数据：", err)
+			logrusx.Log.WithFields(logrusx.Fields{"err": err}).Error("[gateway] ClientConn wsReadLoop 解压数据出错，非法格式,需要json数据")
 			continue
 		}
 
@@ -200,38 +199,30 @@ func (c *ClientConn) wsReadLoop() {
 		respBody := &ws.RespBody{}
 		err = json.Unmarshal(data, respBody)
 		if err != nil {
-			log.Println("数据解析失败", err)
+			logrusx.Log.WithFields(logrusx.Fields{"err": err}).Error("[gateway] ClientConn wsReadLoop unmarshal fail")
 			continue
 		}
-		// 获取到前端传递的数据了
-		// 会收到很多消息，可能是握手，心跳，请求信息(account.login)）
+
+		// respBody 为logic发来的数据
 		if respBody.Seq == 0 {
-			if respBody.Router == common.HandshakeMsg {
-				// 获取服务器秘钥
-				handshake := &ws.Handshake{}
-				mapstructure.Decode(respBody.Msg, handshake)
-				if handshake.Key != "" {
-					c.SetProperty(ws.SecretKey, handshake.Key)
+			if respBody.Router == common.SayHaiMsg {
+				c.sayHai = true
+				c.sayHaiChan <- struct{}{}
+			} else { // seq == 0却不是sayHai数据，将logic传来的数据原封不动传递给客户端
+				if c.onPushClient != nil {
+					c.onPushClient(c, respBody)
 				} else {
-					log.Println("[ClientConn] handShake key nil")
-				}
-				c.handshake = true
-				c.handshakeChan <- struct{}{}
-			} else { // seq == 0却不是握手数据，将logic传来的数据原封不动传递给客户端
-				if c.onPush != nil {
-					c.onPush(c, respBody)
-				} else {
-					log.Println("not set onPush function")
+					logrusx.Log.WithFields(logrusx.Fields{}).Error("[gateway] ClientConn wsReadLoop not set onPushClient function ")
 				}
 			}
 		} else {
 			c.syncCtxMutex.RLock()
-			ctx, ok := c.syncCtxMap[respBody.Seq]
+			reqToRespChan, ok := c.seqToResp[respBody.Seq]
 			c.syncCtxMutex.RUnlock()
 			if ok {
-				ctx.outChan <- respBody
+				reqToRespChan.outChan <- respBody
 			} else {
-				log.Println("no seq seqReqRespSync find")
+				logrusx.Log.WithFields(logrusx.Fields{}).Error("[gateway] ClientConn wsReadLoop no seq seqReqRespSync find ")
 			}
 		}
 
@@ -240,7 +231,7 @@ func (c *ClientConn) wsReadLoop() {
 }
 
 func (c *ClientConn) Close() {
-	_ = c.wsConn.Close()
+	_ = c.logicWsConn.Close()
 }
 
 func (c *ClientConn) write(body interface{}) error {
@@ -249,26 +240,13 @@ func (c *ClientConn) write(body interface{}) error {
 		log.Println(err)
 		return err
 	}
-	// gateway 发往logic，login服务器的数据不需要加密
-	// secretKey, ok := c.GetProperty(ws.SecretKey)
-	// if !ok {
-	// 	log.Println("未设置secretKey值")
-	// 	return err
-	// }
-	// key := secretKey.(string)
-	// // 对数据加密
-	// data, err = utils.AesCBCEncrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
 	// 再对数据进行压缩
 	zipData, err := utils.Zip(data)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	err = c.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
+	err = c.logicWsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -278,7 +256,7 @@ func (c *ClientConn) write(body interface{}) error {
 }
 
 func (c *ClientConn) SetOnPush(push func(conn *ClientConn, body *ws.RespBody)) {
-	c.onPush = push
+	c.onPushClient = push
 }
 
 // Send gateway将请求发送给login,logic服务器,等待返回
@@ -287,7 +265,7 @@ func (c *ClientConn) Send(router string, msg interface{}) (*ws.RespBody, error) 
 	c.Seq++
 	seq := c.Seq
 	sc := NewSeqReqRespSync()
-	c.syncCtxMap[seq] = sc
+	c.seqToResp[seq] = sc
 	c.syncCtxMutex.Unlock()
 
 	req := &ws.ReqBody{
@@ -317,7 +295,7 @@ func (c *ClientConn) Send(router string, msg interface{}) (*ws.RespBody, error) 
 
 	// 该请求处理完成，将请求删除
 	c.syncCtxMutex.Lock()
-	delete(c.syncCtxMap, seq)
+	delete(c.seqToResp, seq)
 	c.syncCtxMutex.Unlock()
 	return rsp, nil
 }

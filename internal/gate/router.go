@@ -22,6 +22,7 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	rsp.Body.Code = ret.OK.Code
 
 	routerName := req.Body.Router
+	// 心跳消息包直接由gateway回
 	if routerName == common.HearbeatMsg {
 		h := &ws.Hearbeat{}
 		mapstructure.Decode(req.Body.Msg, h)
@@ -66,9 +67,9 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		proxyClient.SetProperty("cid", cid)
 		proxyClient.SetProperty("proxyAddr", proxyAddr)
 		proxyClient.SetProperty("clientConn", req.Conn)
-		proxyClient.OnPush(g.Handler.OnPush)
+		proxyClient.OnPushClient(g.Handler.OnPushClient)
 	}
-	// 给logic or login server 发送数据
+	// 给logic server 发送数据,并等待数据返回
 	r, err := proxyClient.Send(req.Body.Router, req.Body.Msg)
 	if err != nil {
 		rsp.Body.Code = ret.Err_ProxyConnect.Code

@@ -42,6 +42,8 @@ func newWsServer(wsConn *websocket.Conn, isGateway bool) *wsServer {
 		s.SetProperty("cid", cid)
 		// 发送握手协议
 		s.handshake()
+	} else {
+		s.sayHai()
 	}
 	return s
 }
@@ -111,7 +113,7 @@ func (w *wsServer) readMsgLoop() {
 	defer func() {
 		if err := recover(); err != nil {
 			w.Close()
-			log.Println(err)
+			logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop recover")
 		}
 	}()
 
@@ -126,7 +128,7 @@ func (w *wsServer) readMsgLoop() {
 		// 1 data解压 unzip
 		data, err = utils.UnZip(data)
 		if err != nil {
-			log.Println("解压数据出错，非法格式,需要json数据：", err)
+			logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop 解压数据出错，非法格式,需要json数据")
 			continue
 		}
 		// 2 前端的消息  加密消息 进行解密
@@ -134,14 +136,14 @@ func (w *wsServer) readMsgLoop() {
 		if w.isGateway {
 			secretKey, ok := w.GetProperty(SecretKey)
 			if !ok {
-				log.Println("未设置secretKey值")
+				logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop 未设置secretKey值")
 				continue
 			}
 			key := secretKey.(string)
 			// 客户端传过来的数据是加密的，需要解密
 			realData, err := utils.AesCBCDecrypt(data, []byte(key), []byte(key), openssl.ZEROS_PADDING)
 			if err != nil {
-				log.Println("数据格式有误，解密失败：", err)
+				logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop 数据格式有误，解密失败")
 				// 出错后发起握手
 				w.handshake()
 				continue
@@ -218,7 +220,7 @@ func (w *wsServer) write2Client(resp interface{}) {
 // 当游戏客户端 发送请求前先进性一次握手协议、
 // 后端会发送对应的加密key给客户端
 // 客户端在发送数据的时候，就会使用此key进行加密处理
-// 握手协议用于gateway，gateway将SecretKey发送给客户端，并自己存下
+// 握手协议用于client与gateway第一次连接，gateway生成SecretKey，并将SecretKey发送给客户端，并自己存下
 func (w *wsServer) handshake() {
 	secretKey := utils.RandSeq(16)
 	key, ok := w.GetProperty(SecretKey)
@@ -230,16 +232,34 @@ func (w *wsServer) handshake() {
 
 	data, err := json.Marshal(body)
 	if err != nil {
-		log.Printf("[wsServer] Handshake json.Marshal err:%s", err.Error())
+		logrusx.Log.WithFields(logrusx.Fields{"err": err.Error()}).Error("[wsServer] Handshake json.Marshal err")
 		return
 	}
 	// 数据压缩
 	zipData, err := utils.Zip(data)
 	if err != nil {
-		log.Printf("[wsServer] Handshake zip data err:%s", err.Error())
+		logrusx.Log.WithFields(logrusx.Fields{"err": err.Error()}).Error("[wsServer] Handshake zip data err")
 		return
 	}
 	w.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	// 服务器把key设置上
 	w.SetProperty(SecretKey, secretKey)
+	logrusx.Log.WithFields(logrusx.Fields{}).Info("[wsServer] Handshake success")
+}
+
+func (w *wsServer) sayHai() {
+	body := &RespBody{Router: common.SayHaiMsg, Msg: nil}
+	data, err := json.Marshal(body)
+	if err != nil {
+		logrusx.Log.WithFields(logrusx.Fields{"err": err.Error()}).Error("[wsServer] sayHai json.Marshal err")
+		return
+	}
+	// 数据压缩
+	zipData, err := utils.Zip(data)
+	if err != nil {
+		logrusx.Log.WithFields(logrusx.Fields{"err": err.Error()}).Error("[wsServer] sayHai zip data err")
+		return
+	}
+	w.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
+	logrusx.Log.WithFields(logrusx.Fields{}).Info("[wsServer] sayHai success")
 }
