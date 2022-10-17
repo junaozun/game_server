@@ -117,11 +117,11 @@ func (w *wsServer) readMsgLoop() {
 		}
 	}()
 
-	// 先读到链接发送过来的数据，然后进行处理，再发送回给客户端消息
+	// 先读到客户端/gateway发送过来的数据，然后进行处理，再发送回给客户端/gateway消息
 	for {
 		_, data, err := w.wsConn.ReadMessage()
 		if err != nil {
-			log.Println("收消息出现错误", err)
+			logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop 收消息出现错误")
 			break
 		}
 		// 收到消息后要解析消息 就是json格式

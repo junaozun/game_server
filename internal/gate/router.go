@@ -22,6 +22,11 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	rsp.Body.Code = ret.OK.Code
 
 	routerName := req.Body.Router
+
+	if routerName == "" {
+		rsp.Body.Code = ret.Err_ProxyNotFound.Code
+		return
+	}
 	// 心跳消息包直接由gateway回
 	if routerName == common.HearbeatMsg {
 		h := &ws.Hearbeat{}
@@ -31,15 +36,11 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 	var proxyAddr string
-	if isAccount(routerName) {
-		proxyAddr = g.Handler.GetLoginProxy()
-	} else {
-		proxyAddr = g.Handler.GetLogicProxy()
-	}
-	if proxyAddr == "" {
-		rsp.Body.Code = ret.Err_ProxyNotFound.Code
-		return
-	}
+	// if isAccount(routerName) {
+	// 	proxyAddr = g.Handler.GetLoginProxy()
+	// } else {
+	proxyAddr = g.Handler.GetLogicProxy()
+	// }
 
 	// 客户端id
 	c, ok := req.Conn.GetProperty("cid")

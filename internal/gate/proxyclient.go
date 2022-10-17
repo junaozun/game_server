@@ -259,7 +259,7 @@ func (c *ClientConn) SetOnPush(push func(conn *ClientConn, body *ws.RespBody)) {
 	c.onPushClient = push
 }
 
-// Send gateway将请求发送给login,logic服务器,等待返回
+// Send gateway将请求发送给logic服务器,等待返回
 func (c *ClientConn) Send(router string, msg interface{}) (*ws.RespBody, error) {
 	c.syncCtxMutex.Lock()
 	c.Seq++

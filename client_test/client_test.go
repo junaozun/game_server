@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	Ws   *websocket.Conn
-	Skey string
+	Ws        *websocket.Conn // 客户端与gateway的长链接
+	Secretkey string
 )
 
 func TestMain(m *testing.M) {
 	var err error
-	url := "ws://localhost:8004" // 服务器地址
+	url := "ws://localhost:8004" // gateway地址
 	Ws, _, err = websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		panic(err)
@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 				log.Println("Decode err")
 				return
 			}
-			Skey = handshake.Key
+			Secretkey = handshake.Key
 			break
 		}
 	}
@@ -62,7 +62,7 @@ func SendWsData(req *ws.ReqBody) *ws.RespBody {
 		return nil
 	}
 	// 对数据加密
-	encryptData, err := utils.AesCBCEncrypt(data, []byte(Skey), []byte(Skey), openssl.ZEROS_PADDING)
+	encryptData, err := utils.AesCBCEncrypt(data, []byte(Secretkey), []byte(Secretkey), openssl.ZEROS_PADDING)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -89,7 +89,7 @@ func SendWsData(req *ws.ReqBody) *ws.RespBody {
 		log.Println("解压数据出错，非法格式,需要json数据：", err)
 		return nil
 	}
-	realData, err := utils.AesCBCDecrypt(resData, []byte(Skey), []byte(Skey), openssl.ZEROS_PADDING)
+	realData, err := utils.AesCBCDecrypt(resData, []byte(Secretkey), []byte(Secretkey), openssl.ZEROS_PADDING)
 	if err != nil {
 		log.Println("数据格式有误，解密失败：", err)
 		return nil

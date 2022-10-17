@@ -3,6 +3,7 @@ package client_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/pkg/ws"
@@ -10,6 +11,13 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	for {
+		time.Sleep(10 * time.Second)
+		loginTest()
+	}
+}
+
+func loginTest() {
 	loginReq := &api.LoginReq{
 		Username: "suxuefeng",
 		Password: "123456",
@@ -25,8 +33,4 @@ func TestLogin(t *testing.T) {
 	}
 	res := SendWsData(req)
 	fmt.Println("receive: ", res)
-}
-
-func TestRegister(t *testing.T) {
-
 }

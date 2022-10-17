@@ -49,7 +49,7 @@ func main() {
 	go rank.NewRankApp().Run(cfg)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt)
-	ticker := time.NewTimer(time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 	// 主循环
 QUIT:
