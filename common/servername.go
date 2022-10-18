@@ -2,6 +2,7 @@ package common
 
 const (
 	ServerName_Logic  = "logic"
+	ServerName_Login  = "login"
 	ServerName_Chess  = "chess"
 	ServerName_Gvg    = "gvg"
 	ServerName_Battle = "battle"
@@ -20,4 +21,5 @@ var ServerNames = []string{
 	ServerName_Pvp,
 	ServerName_Rank,
 	ServerName_Web,
+	ServerName_Login,
 }

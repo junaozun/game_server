@@ -33,7 +33,7 @@ func (a *AccountService) AddAccount(ctx context.Context, user *common_model.User
 		return errno
 	}
 	// 用户已存在
-	if account.UId != 0 {
+	if account.ID != 0 {
 		return ret.Err_UserExist
 	}
 	err := a.Repo.AddAccount(ctx, user)

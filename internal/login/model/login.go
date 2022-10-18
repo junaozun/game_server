@@ -11,8 +11,8 @@ const (
 
 // LoginHistory 登录历史记录表
 type LoginHistory struct {
-	ID        uint      `gorm:"primarykey"`
-	UId       int       `gorm:"column:uid;type:int(11)"`
+	ID        uint64    `gorm:"primarykey"`
+	UId       uint64    `gorm:"column:uid;type:int(11)"`
 	UserName  string    `gorm:"column:serverId;type:varchar(11)"`
 	LoginTime time.Time `gorm:"column:loginTime;type:datetime"`
 	Ip        string    `gorm:"column:ip;type:varchar(11)"`
@@ -22,7 +22,7 @@ type LoginHistory struct {
 
 type LoginLast struct {
 	ID         uint      `gorm:"primarykey"`
-	UId        int       `gorm:"column:uid;type:int(11)"`
+	UId        uint64    `gorm:"column:uid;type:int(11)"`
 	LoginTime  time.Time `gorm:"column:loginTime;type:datetime"`
 	LogoutTime time.Time `gorm:"column:logoutTime;type:datetime"`
 	Ip         string    `gorm:"column:ip;type:varchar(11)"`

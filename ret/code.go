@@ -13,6 +13,9 @@ var (
 	Err_ProxyNotFound  = errno.NewError(1100, "代理服务未发现")
 	Err_ProxyConnect   = errno.NewError(1101, "代理链接错误")
 
-	Err_Param = errno.NewError(2000, "参数错误")
-	Err_DB    = errno.NewError(2001, "数据错误")
+	Err_Param          = errno.NewError(2000, "参数错误")
+	Err_DB             = errno.NewError(2001, "数据库操作错误")
+	Err_SessionInvalid = errno.NewError(2002, "session无效")
+	Err_RoleNotExist   = errno.NewError(2003, "角色不存在")
+	Err_TokenGenERR    = errno.NewError(2004, "生成token错误")
 )

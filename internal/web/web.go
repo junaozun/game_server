@@ -17,7 +17,7 @@ type WebApp struct {
 }
 
 func NewWebApp(cfg config.GameConfig) *WebApp {
-	dao, err := dao.NewDao([]interface{}{cfg.Web.Mysql, cfg.Common.Etcd, cfg.Common.Redis})
+	dao, err := dao.NewDao([]interface{}{cfg.Common.Mysql, cfg.Common.Etcd, cfg.Common.Redis})
 	if err != nil {
 		panic(err)
 	}

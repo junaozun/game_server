@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/junaozun/game_server/internal/gate"
+	"github.com/junaozun/game_server/internal/login"
 	"github.com/junaozun/game_server/internal/rank"
 	"github.com/junaozun/game_server/internal/web"
 	"github.com/junaozun/gogopkg/config"
@@ -39,7 +40,8 @@ func main() {
 		panic(err)
 	}
 	rand.Seed(time.Now().UnixNano())
-	// 将逻辑服、战斗服、跨服、pvp服、web服,gateway,排行榜服全都启动起来
+	// 将登录服、逻辑服、战斗服、跨服、pvp服、web服,gateway,rank服全都启动起来
+	go login.NewLoginApp().Run(cfg)
 	go logic.NewLogicApp().Run(cfg)
 	go battle.NewBattleApp().Run(cfg)
 	go chess.NewChessApp().Run(cfg)

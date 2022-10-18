@@ -1,38 +1,41 @@
-package game
+package login
 
 import (
 	"log"
 
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
-	"github.com/junaozun/game_server/internal/logic/model"
+	"github.com/junaozun/game_server/internal/login/model"
 	common_model "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
+	"github.com/junaozun/gogopkg/logrusx"
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm/clause"
 )
 
-type Account struct {
-	game *Game
+func (l *LoginApp) InitLogin() {
+	l.initTable()
+	l.initRouter()
 }
 
-func NewAccount(game *Game) *Account {
-	return &Account{
-		game: game,
+func (l *LoginApp) initRouter() {
+	l.Router.Group("account").AddRouter("login", l.login)
+}
+
+func (g *LoginApp) initTable() {
+	err := g.Dao.DB.AutoMigrate(
+		new(common_model.User),
+		new(model.LoginHistory),
+		new(model.LoginLast),
+	)
+	if err != nil {
+		panic(err)
 	}
 }
 
-func (a *Account) RegisterRouter(cb func(command ExecCommand)) {
-	cb(ExecCommand{
-		group:    "account",
-		name:     "login",
-		execFunc: a.login,
-	})
-}
-
-func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
+func (l *LoginApp) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	loginReq := &api.LoginReq{}
 	err := mapstructure.Decode(req.Body.Msg, loginReq)
 	if err != nil {
@@ -41,13 +44,13 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	}
 
 	user := &common_model.User{}
-	db := a.game.Dao.DB
+	db := l.Dao.DB
 	err = db.Where(&common_model.User{Username: loginReq.Username}).Find(user).Error
 	if err != nil {
 		return
 	}
 
-	if user.UId == 0 { // 用户不存在
+	if user.ID == 0 { // 用户不存在
 		rsp.Body.Code = ret.Err_UserNotFound.Code
 		return
 	}
@@ -58,8 +61,10 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 
-	token, err := utils.SetToken(user.UId)
+	token, err := utils.SetToken(user.ID)
 	if err != nil {
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("[Account] login token生成错误")
+		rsp.Body.Code = ret.Err_TokenGenERR.Code
 		return
 	}
 
@@ -67,13 +72,13 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	loginResp := &api.LoginRsp{
 		Username: user.Username,
 		Session:  token,
-		UId:      user.UId,
+		UId:      user.ID,
 	}
 	rsp.Body.Msg = loginResp
 
 	// 保存用户登录记录
 	loginRecord := &model.LoginHistory{
-		UId:       user.UId,
+		UId:       user.ID,
 		UserName:  user.Username,
 		LoginTime: global.Now(),
 		Ip:        loginReq.Ip,
@@ -82,7 +87,7 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	}
 	err = db.Create(loginRecord).Error
 	if err != nil {
-		log.Println("[Account] save loginRecord error")
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("[Account] save loginRecord error")
 		return
 	}
 
@@ -92,7 +97,7 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		Columns:   []clause.Column{{Name: "uid"}},                                                             //  这里的列必须是唯一的，比如主键或是唯一索引
 		DoUpdates: clause.AssignmentColumns([]string{"login_time", "ip", "session", "is_logout", "hardware"}), // 更新哪些字段
 	}).Create(&model.LoginLast{
-		UId:       user.UId,
+		UId:       user.ID,
 		LoginTime: global.Now(),
 		Ip:        loginReq.Ip,
 		Session:   token,
@@ -100,5 +105,5 @@ func (a *Account) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		Hardware:  loginReq.Hardware,
 	})
 	// 缓存一下此用户和当前的ws连接
-	a.game.UserLogin(req.Conn, user.UId, token)
+	l.onLineUser.UserLogin(req.Conn, user.ID, token)
 }

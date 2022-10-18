@@ -11,9 +11,14 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	var count int
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(2 * time.Second)
 		loginTest()
+		count++
+		if count > 10 {
+			break
+		}
 	}
 }
 

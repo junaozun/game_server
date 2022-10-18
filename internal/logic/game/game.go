@@ -2,9 +2,8 @@ package game
 
 import (
 	"github.com/junaozun/game_server/component"
+	"github.com/junaozun/game_server/internal/logic/game_config"
 	"github.com/junaozun/game_server/internal/logic/model"
-	"github.com/junaozun/game_server/internal/logic/wsMgr"
-	model2 "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/ws"
 )
 
@@ -12,34 +11,32 @@ type Game struct {
 	*MgrManager          // mgr管理器
 	*component.Component // 组件
 	*ws.Router           // 路由
-	*wsMgr.WsMgr         // 在线用户
+
 	// 系统功能
-	Account *Account
+	Role *Role
 	// 玩法功能
 }
 
-func NewGame(component *component.Component, router *ws.Router, onLineUser *wsMgr.WsMgr) *Game {
+func NewGame(component *component.Component, router *ws.Router) *Game {
 	g := &Game{
 		MgrManager: NewMgrManager(),
 		Component:  component,
 		Router:     router,
-		WsMgr:      onLineUser,
 	}
 	g.Init()
 	return g
 }
 
 func (g *Game) Init() {
-	// g.initTable()
+	g.initTable()
 	g.initGame()
 	g.initRouter()
 }
 
 func (g *Game) initTable() {
 	err := g.Component.Dao.DB.AutoMigrate(
-		new(model2.User),
-		new(model.LoginHistory),
-		new(model.LoginLast),
+		new(model.Role),
+		new(model.RoleRes),
 	)
 	if err != nil {
 		panic(err)
@@ -47,11 +44,15 @@ func (g *Game) initTable() {
 }
 
 func (g *Game) initGame() {
-	// 初始化账号系统
-	g.Account = NewAccount(g)
+
+	// 初始化角色资源
+	game_config.Base.Load()
+
+	// 初始化角色
+	g.Role = NewRole(g)
 
 	// register
-	g.Register(g.Account)
+	g.Register(g.Role)
 
 }
 

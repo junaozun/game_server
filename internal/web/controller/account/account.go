@@ -33,7 +33,6 @@ func (ctl *AccountCtl) Register(c *gin.Context) {
 	}
 	dbUser := &common_model.User{
 		CreateTime: global.Now(),
-		UId:        1,
 		Username:   req.Username,
 		Passwd:     utils.ScryptPasswd(req.Password),
 		Hardware:   req.Hardware,

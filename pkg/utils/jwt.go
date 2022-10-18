@@ -10,12 +10,12 @@ import (
 var jwtKey = []byte("873dhc7sfs09d")
 
 type MyClaims struct {
-	Uid int
+	Uid uint64
 	jwt.StandardClaims
 }
 
 // SetToken 生成Token
-func SetToken(uid int) (string, error) {
+func SetToken(uid uint64) (string, error) {
 	// 过期时间 默认7天
 	expireTime := time.Now().Add(7 * 24 * time.Hour)
 	claims := &MyClaims{

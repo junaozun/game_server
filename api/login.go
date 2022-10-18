@@ -11,7 +11,7 @@ type LoginRsp struct {
 	Username string `json:"username"`
 	// Password string `json:"password"`
 	Session string `json:"session"`
-	UId     int    `json:"uid"`
+	UId     uint64 `json:"uid"`
 }
 
 type LogoutReq struct {

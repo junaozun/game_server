@@ -1,27 +1,20 @@
 gate:
   port: 8004
   debug: true
-  login_proxy: ws://127.0.0.1:8005
-  logic_proxy: ws://127.0.0.1:8006
+  login_proxy: ws://127.0.0.1:8003
+  logic_proxy: ws://127.0.0.1:8002
 
 login:
-  port: 8005
+  port: 8003
+  debug: true
 
 logic:
-  port: 8006
+  port: 8002
   debug: true
-  mysql:
-    user: root
-    password: 123456
-    host: 119.45.254.67:3306
-    name: logic_server
 
 cross:
-  mysql:
-    user: root
-    password: 123456
-    host: 119.45.254.67:3306
-    name: cross_server
+  port: 3333
+  debug: true
 
 pvp:
   port: 7777
@@ -34,14 +27,14 @@ battle:
 web:
   port: 8080
   debug: true
+
+common:
+  cluster: dev
   mysql:
     user: root
     password: 123456
     host: 119.45.254.67:3306
-    name: logic_server
-
-common:
-  cluster: dev
+    name: game_sanguo
   redis:
     server: 127.0.0.1:6379
     index: 0

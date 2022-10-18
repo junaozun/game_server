@@ -2,14 +2,14 @@ package ws
 
 type ReqBody struct {
 	Seq    int64       `json:"seq"`
-	Router string      `json:"router"` // account.login
+	Router string      `json:"name"` // account.login
 	Msg    interface{} `json:"msg"`
 	Proxy  string      `json:"proxy"` // 多进程，服务之间调用
 }
 
 type RespBody struct {
 	Seq    int64       `json:"seq"`
-	Router string      `json:"router"`
+	Router string      `json:"name"`
 	Code   int         `json:"code"`
 	Msg    interface{} `json:"msg"`
 }

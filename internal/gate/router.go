@@ -36,11 +36,11 @@ func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 		return
 	}
 	var proxyAddr string
-	// if isAccount(routerName) {
-	// 	proxyAddr = g.Handler.GetLoginProxy()
-	// } else {
-	proxyAddr = g.Handler.GetLogicProxy()
-	// }
+	if isAccount(routerName) {
+		proxyAddr = g.Handler.GetLoginProxy()
+	} else {
+		proxyAddr = g.Handler.GetLogicProxy()
+	}
 
 	// 客户端id
 	c, ok := req.Conn.GetProperty("cid")
