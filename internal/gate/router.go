@@ -16,7 +16,7 @@ func (g *GateApp) InitRouter() {
 }
 
 func (g *GateApp) routerForward(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
-	logrusx.Log.WithFields(logrusx.Fields{}).Info("[GateApp] routerForward 客户端请求到达gateway....")
+	logrusx.Log.WithFields(logrusx.Fields{"router": req.Body.Router}).Info("[GateApp] routerForward 客户端请求到达gateway....")
 	rsp.Body.Seq = req.Body.Seq
 	rsp.Body.Router = req.Body.Router
 	rsp.Body.Code = ret.OK.Code

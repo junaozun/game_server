@@ -24,7 +24,24 @@ func NewAccountCtl(accountService *service.AccountService, natsService *service.
 	}
 }
 
+// Register 在url中附带请求参数
 func (ctl *AccountCtl) Register(c *gin.Context) {
+	ctx := c.Request.Context()
+	userName := c.Query("username")
+	passWord := c.Query("password")
+	hardWare := c.Query("hardware")
+	dbUser := &common_model.User{
+		CreateTime: global.Now(),
+		Username:   userName,
+		Passwd:     utils.ScryptPasswd(passWord),
+		Hardware:   hardWare,
+		IsOnline:   false,
+	}
+	errno := ctl.Service.AddAccount(ctx, dbUser)
+	c.JSON(http.StatusOK, errno)
+}
+
+func (ctl *AccountCtl) RegisterBack(c *gin.Context) {
 	ctx := c.Request.Context()
 	req := api.RegisterReq{}
 	if err := c.ShouldBind(&req); err != nil {

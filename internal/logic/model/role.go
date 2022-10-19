@@ -11,14 +11,14 @@ import (
 type Role struct {
 	Id         int       `gorm:"rid pk autoincr"` // 角色id
 	UId        int       `gorm:"column:uid"`
-	NickName   string    `gorm:"column:nickName" validate:"min=4,max=20,regexp=^[a-zA-Z0-9_]*$"`
+	NickName   string    `gorm:"column:nickName;type:varchar(50)"`
 	Balance    int       `gorm:"column:balance"`
 	HeadId     int16     `gorm:"column:headId"`
 	Sex        int8      `gorm:"column:sex"`
-	Profile    string    `gorm:"column:profile"`
-	LoginTime  time.Time `gorm:"column:loginTime"`
-	LogoutTime time.Time `gorm:"column:logoutTime"`
-	CreatedAt  time.Time `gorm:"column:createdAt"`
+	Profile    string    `gorm:"column:profile;type:varchar(30)"`
+	LoginTime  time.Time `gorm:"column:loginTime;DATETIME(10)"`
+	LogoutTime time.Time `gorm:"column:logoutTime;DATETIME(10)"`
+	CreatedAt  time.Time `gorm:"column:createdAt;DATETIME(10)"`
 }
 
 func (r *Role) TableName() string {

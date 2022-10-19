@@ -21,6 +21,7 @@ func NewWebRouter(accountCtl *account.AccountCtl) WebRouter {
 		account := g.Group("/account")
 		{
 			account.Any("/register", accountCtl.Register)
+			account.Any("/register_back", accountCtl.RegisterBack)
 			account.Any("/nats_rpc", accountCtl.UseNatsTest)
 			account.Any("/getRankTest", accountCtl.GetRankTest)
 		}

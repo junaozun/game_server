@@ -69,8 +69,23 @@ func (a *Role) enterServer(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 
 	// 角色不存在
 	if role.Id == 0 {
-		rsp.Body.Code = ret.Err_RoleNotExist.Code
-		return
+		// todo 创建一个
+		err := db.Create(&model.Role{
+			UId:        int(uid),
+			NickName:   "牛油果树",
+			Balance:    123,
+			HeadId:     331,
+			Sex:        1,
+			Profile:    "ooooooo",
+			LoginTime:  global.Now(),
+			LogoutTime: global.Now(),
+			CreatedAt:  global.Now(),
+		}).Error
+		if err != nil {
+			logrusx.Log.WithFields(logrusx.Fields{"err": err}).Error("[role] enterServer 创建角色失败")
+			rsp.Body.Code = ret.Err_RoleNotExist.Code
+			return
+		}
 	}
 	rid := role.Id
 	roleRes := &model.RoleRes{}

@@ -13,17 +13,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/junaozun/game_server/internal/battle"
+	"github.com/junaozun/game_server/internal/cross/chess"
 	"github.com/junaozun/game_server/internal/gate"
+	"github.com/junaozun/game_server/internal/logic"
 	"github.com/junaozun/game_server/internal/login"
+	"github.com/junaozun/game_server/internal/pvp"
 	"github.com/junaozun/game_server/internal/rank"
 	"github.com/junaozun/game_server/internal/web"
 	"github.com/junaozun/gogopkg/config"
 	"github.com/junaozun/gogopkg/logrusx"
-
-	"github.com/junaozun/game_server/internal/battle"
-	"github.com/junaozun/game_server/internal/cross/chess"
-	"github.com/junaozun/game_server/internal/logic"
-	"github.com/junaozun/game_server/internal/pvp"
 )
 
 var (

@@ -37,7 +37,7 @@ func (l *LoginApp) Run(cfg config.GameConfig) error {
 	}
 	l.Dao = dao
 	l.InitLogin()
-	wsServer := ws.NewWsServer(host+cfg.Logic.Port, l.Router, false)
+	wsServer := ws.NewWsServer(host+cfg.Login.Port, l.Router, false)
 	login := app.New(
 		app.OnBeginHook(func() {
 			logrusx.Log.WithFields(logrusx.Fields{
