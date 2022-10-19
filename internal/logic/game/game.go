@@ -13,7 +13,8 @@ type Game struct {
 	*ws.Router           // 路由
 
 	// 系统功能
-	Role *Role
+	Role      *Role
+	NationMap *NationMap
 	// 玩法功能
 }
 
@@ -37,6 +38,8 @@ func (g *Game) initTable() {
 	err := g.Component.Dao.DB.AutoMigrate(
 		new(model.Role),
 		new(model.RoleRes),
+		new(model.RoleAttribute),
+		new(model.MapCity),
 	)
 	if err != nil {
 		panic(err)
@@ -50,9 +53,11 @@ func (g *Game) initGame() {
 
 	// 初始化角色
 	g.Role = NewRole(g)
+	g.NationMap = NewNationMap(g)
 
 	// register
 	g.Register(g.Role)
+	g.Register(g.NationMap)
 
 }
 
