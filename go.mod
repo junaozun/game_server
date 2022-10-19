@@ -6,11 +6,13 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/forgoer/openssl v1.3.0
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/wire v0.5.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/junaozun/gogopkg v0.0.0-20221019025735-3fa8410039ea
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+	google.golang.org/protobuf v1.28.0
 	gorm.io/gorm v1.24.0
 )
 
@@ -25,7 +27,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -56,7 +57,6 @@ require (
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.41.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.4.0 // indirect
 )

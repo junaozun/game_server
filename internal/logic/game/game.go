@@ -50,6 +50,8 @@ func (g *Game) initGame() {
 
 	// 初始化角色资源
 	game_config.Base.Load()
+	// 加载地图资源配置
+	game_config.MapBuildConf.Load()
 
 	// 初始化角色
 	g.Role = NewRole(g)
