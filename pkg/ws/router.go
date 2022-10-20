@@ -1,8 +1,9 @@
 package ws
 
 import (
-	"log"
 	"strings"
+
+	"github.com/junaozun/gogopkg/logrusx"
 )
 
 type Router struct {
@@ -61,7 +62,7 @@ func (g *group) exec(name string, req *WsMsgReq, rsp *WsMsgResp) {
 		if ah != nil {
 			ah(req, rsp)
 		} else {
-			log.Println("找不到路由....")
+			logrusx.Log.WithFields(logrusx.Fields{}).Error("[group] exec 找不到路由")
 		}
 	}
 }

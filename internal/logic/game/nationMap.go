@@ -5,6 +5,8 @@ import (
 	"github.com/junaozun/game_server/internal/logic/game_config"
 	"github.com/junaozun/game_server/pkg/ws"
 	"github.com/junaozun/game_server/ret"
+	"github.com/junaozun/gogopkg/logrusx"
+	"github.com/mitchellh/mapstructure"
 )
 
 type NationMap struct {
@@ -32,8 +34,15 @@ func (n *NationMap) nationMapConfig(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	rsp.Body.Seq = req.Body.Seq
 	rsp.Body.Code = ret.OK.Code
 
-	// reqParams := &api.ConfigReq{}
+	reqParams := &api.ConfigReq{}
 	respParams := &api.ConfigRsp{}
+
+	err := mapstructure.Decode(req.Body.Msg, reqParams)
+	if err != nil {
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("[NationMap] nationMapConfig 解析请求参数错误")
+		rsp.Body.Code = ret.Err_Param.Code
+		return
+	}
 
 	cfgs := game_config.MapBuildConf.Cfg
 

@@ -12,9 +12,7 @@ type EnterServerRsp struct {
 	Token   string   `json:"token"`
 }
 
-// 数据库的字段 不一定是客户端需要的字段，做业务逻辑的时候 会将数据库的结果 映射到客户端需要的结果上
-// 其中 可能会做一些转换
-// dto data trasfer object business object
+// RoleBase 角色基础属性
 type RoleBase struct {
 	RId      int    `json:"rid"`
 	UId      int    `json:"uid"`
@@ -25,6 +23,7 @@ type RoleBase struct {
 	Profile  string `json:"profile"`
 }
 
+// RoleRes 角色资源
 type RoleRes struct {
 	Wood          int `json:"wood"`
 	Iron          int `json:"iron"`

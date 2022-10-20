@@ -1,13 +1,15 @@
-package model
+package data
 
 import (
 	"sync"
 	"time"
+
+	"github.com/junaozun/game_server/api"
 )
 
 type MapCity struct {
 	mutex      sync.Mutex `gorm:"-"`
-	CityId     int        `gorm:"column:cityId;pk autoincr"`
+	Id         int        `gorm:"id pk autoincr"` // cityID
 	RId        int        `gorm:"column:rid"`
 	Name       string     `gorm:"column:name"`
 	X          int        `gorm:"column:x"`
@@ -22,20 +24,20 @@ func (m *MapCity) TableName() string {
 	return "map_city"
 }
 
-// func (m *MapRoleCity) ToModel() interface{} {
-// 	p := model.MapRoleCity{}
-// 	p.X = m.X
-// 	p.Y = m.Y
-// 	p.CityId = m.CityId
-// 	p.UnionId = GetUnion(m.RId)
-// 	p.UnionName = ""
-// 	p.ParentId = 0
-// 	p.MaxDurable = 1000
-// 	p.CurDurable = m.CurDurable
-// 	p.Level = 1
-// 	p.RId = m.RId
-// 	p.Name = m.Name
-// 	p.IsMain = m.IsMain == 1
-// 	p.OccupyTime = m.OccupyTime.UnixNano() / 1e6
-// 	return p
-// }
+func (m *MapCity) ToClient() api.MapRoleCity {
+	p := api.MapRoleCity{}
+	p.X = m.X
+	p.Y = m.Y
+	p.CityId = m.Id
+	p.UnionId = 0
+	p.UnionName = ""
+	p.ParentId = 0
+	p.MaxDurable = 1000
+	p.CurDurable = m.CurDurable
+	p.Level = 1
+	p.RId = m.RId
+	p.Name = m.Name
+	p.IsMain = m.IsMain == 1
+	p.OccupyTime = m.OccupyTime.UnixNano() / 1e6
+	return p
+}

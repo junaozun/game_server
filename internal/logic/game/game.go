@@ -2,8 +2,8 @@ package game
 
 import (
 	"github.com/junaozun/game_server/component"
+	"github.com/junaozun/game_server/internal/logic/data"
 	"github.com/junaozun/game_server/internal/logic/game_config"
-	"github.com/junaozun/game_server/internal/logic/model"
 	"github.com/junaozun/game_server/pkg/ws"
 )
 
@@ -13,8 +13,9 @@ type Game struct {
 	*ws.Router           // 路由
 
 	// 系统功能
-	Role      *Role
-	NationMap *NationMap
+	Role       *Role       // 角色
+	NationMap  *NationMap  // 游戏配置
+	MyProperty *MyProperty // 获取角色拥有的属性
 	// 玩法功能
 }
 
@@ -36,10 +37,13 @@ func (g *Game) Init() {
 
 func (g *Game) initTable() {
 	err := g.Component.Dao.DB.AutoMigrate(
-		new(model.Role),
-		new(model.RoleRes),
-		new(model.RoleAttribute),
-		new(model.MapCity),
+		new(data.Role),
+		new(data.RoleRes),
+		new(data.RoleAttribute),
+		new(data.MapCity),
+		new(data.MapRoleBuild),
+		new(data.Army),
+		new(data.Commander),
 	)
 	if err != nil {
 		panic(err)
@@ -56,11 +60,12 @@ func (g *Game) initGame() {
 	// 初始化角色
 	g.Role = NewRole(g)
 	g.NationMap = NewNationMap(g)
+	g.MyProperty = NewMyProperty(g)
 
 	// register
 	g.Register(g.Role)
 	g.Register(g.NationMap)
-
+	g.Register(g.MyProperty)
 }
 
 func (g *Game) initRouter() {
