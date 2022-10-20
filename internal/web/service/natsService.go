@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/common"
+	"github.com/junaozun/game_server/internal/rank/rank_api"
 	"github.com/junaozun/game_server/internal/web/repo"
 	"github.com/junaozun/gogopkg/natsx"
 	"github.com/junaozun/gogopkg/natsx/testdata"
@@ -34,14 +34,14 @@ func (n *NatsService) UseNatsTest(ctx context.Context, name string) (*testdata.T
 	return resp, nil
 }
 
-func (n *NatsService) GetRankTest(ctx context.Context, rankKey string) (*api.GetRankResp, error) {
-	req := &api.GetRankReq{
+func (n *NatsService) GetRankTest(ctx context.Context, rankKey string) (*rank_api.GetRankResp, error) {
+	req := &rank_api.GetRankReq{
 		RankKey:   "area",
 		Me:        "nihao3",
 		BeginRank: 0,
 		Count:     10,
 	}
-	resp := &api.GetRankResp{}
+	resp := &rank_api.GetRankResp{}
 	err := n.Repo.Request(ctx, common.ServerName_Rank, "RankHandler", "OnGetRank", req, resp)
 	if err != nil {
 		return nil, err

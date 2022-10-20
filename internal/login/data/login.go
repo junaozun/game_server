@@ -1,4 +1,4 @@
-package model
+package data
 
 import (
 	"time"
@@ -17,7 +17,7 @@ type LoginHistory struct {
 	LoginTime time.Time `gorm:"column:loginTime;type:datetime"`
 	Ip        string    `gorm:"column:ip;type:varchar(11)"`
 	State     int8      `gorm:"column:state;type:int(11)"`
-	Hardware  string    `gorm:"column:hardware;type:varchar(11)"`
+	Hardware  string    `gorm:"column:hardware;type:varchar(255)"`
 }
 
 type LoginLast struct {
@@ -28,7 +28,7 @@ type LoginLast struct {
 	Ip         string    `gorm:"column:ip;type:varchar(11)"`
 	Session    string    `gorm:"column:session;type:varchar(255)"`
 	IsLogout   int8      `gorm:"column:isLogout;type:int(11)"`
-	Hardware   string    `gorm:"column:hardware;type:varchar(11)"`
+	Hardware   string    `gorm:"column:hardware;type:varchar(255)"`
 }
 
 func (*LoginHistory) TableName() string {

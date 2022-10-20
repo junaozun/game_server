@@ -5,7 +5,7 @@ import (
 
 	"github.com/junaozun/game_server/api"
 	"github.com/junaozun/game_server/global"
-	"github.com/junaozun/game_server/internal/login/model"
+	"github.com/junaozun/game_server/internal/login/data"
 	common_model "github.com/junaozun/game_server/model"
 	"github.com/junaozun/game_server/pkg/utils"
 	"github.com/junaozun/game_server/pkg/ws"
@@ -27,8 +27,8 @@ func (l *LoginApp) initRouter() {
 func (g *LoginApp) initTable() {
 	err := g.Dao.DB.AutoMigrate(
 		new(common_model.User),
-		new(model.LoginHistory),
-		new(model.LoginLast),
+		new(data.LoginHistory),
+		new(data.LoginLast),
 	)
 	if err != nil {
 		panic(err)
@@ -77,12 +77,12 @@ func (l *LoginApp) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 	rsp.Body.Msg = loginResp
 
 	// 保存用户登录记录
-	loginRecord := &model.LoginHistory{
+	loginRecord := &data.LoginHistory{
 		UId:       user.ID,
 		UserName:  user.Username,
 		LoginTime: global.Now(),
 		Ip:        loginReq.Ip,
-		State:     model.UserStatus_Login,
+		State:     data.UserStatus_Login,
 		Hardware:  loginReq.Hardware,
 	}
 	err = db.Create(loginRecord).Error
@@ -93,17 +93,22 @@ func (l *LoginApp) login(req *ws.WsMsgReq, rsp *ws.WsMsgResp) {
 
 	// 保存用户的最后一次登录
 	// upsert 没有插入，有则更新
-	db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "uid"}},                                                             //  这里的列必须是唯一的，比如主键或是唯一索引
-		DoUpdates: clause.AssignmentColumns([]string{"login_time", "ip", "session", "is_logout", "hardware"}), // 更新哪些字段
-	}).Create(&model.LoginLast{
-		UId:       user.ID,
-		LoginTime: global.Now(),
-		Ip:        loginReq.Ip,
-		Session:   token,
-		IsLogout:  model.UserStatus_Login,
-		Hardware:  loginReq.Hardware,
-	})
+	err = db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "uid"}},                                                           //  这里的列必须是唯一的，比如主键或是唯一索引
+		DoUpdates: clause.AssignmentColumns([]string{"loginTime", "ip", "session", "isLogout", "hardware"}), // 更新哪些字段
+	}).Create(&data.LoginLast{
+		UId:        user.ID,
+		LoginTime:  global.Now(),
+		LogoutTime: global.Now(),
+		Ip:         loginReq.Ip,
+		Session:    token,
+		IsLogout:   data.UserStatus_Login,
+		Hardware:   loginReq.Hardware,
+	}).Error
+	if err != nil {
+		logrusx.Log.WithFields(logrusx.Fields{}).Error("[Account] save 保存用户的最后一次登录错误")
+		return
+	}
 	// 缓存一下此用户和当前的ws连接
 	l.onLineUser.UserLogin(req.Conn, user.ID, token)
 }

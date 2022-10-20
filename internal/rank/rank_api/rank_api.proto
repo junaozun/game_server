@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package rank;
-option go_package = "./;api";
+option go_package = "./;rank_api";
 
 message GetRankReq {
     string rankKey = 1;

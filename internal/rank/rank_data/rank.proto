@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package rank;
-option go_package = "./;rankPb";
+option go_package = "./;rank_data";
 
 message RankSnapshot {
   map<string,uint32> snapshotData = 1; // id - > score

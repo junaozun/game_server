@@ -3,7 +3,7 @@ package rank_server
 import (
 	"context"
 
-	"github.com/junaozun/game_server/api"
+	"github.com/junaozun/game_server/internal/rank/rank_api"
 	"github.com/junaozun/gogopkg/natsx/testdata"
 )
 
@@ -11,14 +11,14 @@ type RankHandler struct {
 	Rank *Rank
 }
 
-func (r *RankHandler) OnGetRank(ctx context.Context, req *api.GetRankReq) (*api.GetRankResp, error) {
-	resp := &api.GetRankResp{}
+func (r *RankHandler) OnGetRank(ctx context.Context, req *rank_api.GetRankReq) (*rank_api.GetRankResp, error) {
+	resp := &rank_api.GetRankResp{}
 	var err error
 	ch := make(chan struct{})
 	r.Rank.GetRank(req.GetMe(), req.GetRankKey(), int64(req.GetBeginRank()), int64(req.GetCount()), func(res *RankResult) {
-		resRankItem := make([]*api.RankItem, 0, len(res.RankList))
+		resRankItem := make([]*rank_api.RankItem, 0, len(res.RankList))
 		for _, v := range res.RankList {
-			resRankItem = append(resRankItem, &api.RankItem{
+			resRankItem = append(resRankItem, &rank_api.RankItem{
 				Id:      v.id,
 				Score:   v.score,
 				Rank:    v.rank,
@@ -26,7 +26,7 @@ func (r *RankHandler) OnGetRank(ctx context.Context, req *api.GetRankReq) (*api.
 			})
 		}
 		resp.RankItem = resRankItem
-		resp.Me = &api.RankItem{
+		resp.Me = &rank_api.RankItem{
 			Id:      res.Me.id,
 			Score:   res.Me.score,
 			Rank:    res.Me.rank,

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/junaozun/game_server/internal/rank/rankPb"
+	"github.com/junaozun/game_server/internal/rank/rank_data"
 	"github.com/junaozun/gogopkg/logrusx"
 	"google.golang.org/protobuf/proto"
 )
@@ -14,14 +14,14 @@ const (
 )
 
 type Rank struct {
-	snapshotRank      map[string]*rankPb.RankSnapshot // 排行榜快照 rankKey -> id -> score
-	dirtySnapshotRank map[string]struct{}             // 脏标记
-	db                *Dao                            // redis 数据存储
+	snapshotRank      map[string]*rank_data.RankSnapshot // 排行榜快照 rankKey -> id -> score
+	dirtySnapshotRank map[string]struct{}                // 脏标记
+	db                *Dao                               // redis 数据存储
 }
 
 func NewRank() *Rank {
 	r := &Rank{
-		snapshotRank:      make(map[string]*rankPb.RankSnapshot),
+		snapshotRank:      make(map[string]*rank_data.RankSnapshot),
 		dirtySnapshotRank: make(map[string]struct{}),
 		db:                NewDao(),
 	}
@@ -45,7 +45,7 @@ func (r *Rank) loadSnapshotData() error {
 	}
 
 	for rankKey, data := range saveSnapshotRanks {
-		snapshotData := new(rankPb.RankSnapshot)
+		snapshotData := new(rank_data.RankSnapshot)
 		err := proto.Unmarshal([]byte(data), snapshotData)
 		if err != nil {
 			return err
