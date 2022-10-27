@@ -2,7 +2,9 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -113,7 +115,7 @@ func (w *wsServer) readMsgLoop() {
 	defer func() {
 		if err := recover(); err != nil {
 			w.Close()
-			logrusx.Log.WithFields(logrusx.Fields{"err": err, "isGateway": w.isGateway}).Error("[wsServer] readMsgLoop recover")
+			fmt.Printf("[panic] err: %v\nstack: %s\n", err, getCurrentGoroutineStack())
 		}
 	}()
 
@@ -262,4 +264,12 @@ func (w *wsServer) sayHai() {
 	}
 	w.wsConn.WriteMessage(websocket.BinaryMessage, zipData)
 	logrusx.Log.WithFields(logrusx.Fields{}).Info("[wsServer] sayHai success")
+}
+
+// getCurrentGoroutineStack 获取当前Goroutine的调用栈，便于排查panic异常
+func getCurrentGoroutineStack() string {
+	const size = 64 << 10
+	buf := make([]byte, size)
+	buf = buf[:runtime.Stack(buf, false)]
+	return string(buf)
 }
