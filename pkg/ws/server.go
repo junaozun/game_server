@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/arl/statsviz"
 	"github.com/gorilla/websocket"
 )
 
@@ -26,6 +27,10 @@ func NewWsServer(addr string, router *Router, isGateway bool) *WsServer {
 func (s *WsServer) Start(ctx context.Context) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.wsHandler)
+	// 默认情况下statsviz的服务路由地址是在 /debug/statsviz/下
+	// http://localhost:8002/debug/statsviz/
+	statsviz.Register(mux)
+	// statsviz.RegisterDefault()
 	s.Handler = mux
 	err := s.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
