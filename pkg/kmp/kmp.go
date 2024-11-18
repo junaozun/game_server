@@ -79,10 +79,33 @@ func generateNext(p string) []int {
 }
 
 func TestGO() {
-	go func() {
+	var a int
+	go func(a int) {
 		for {
+			panic("xxx")
 			time.Sleep(1 * time.Second)
 			fmt.Println("111")
 		}
-	}()
+	}(a)
+}
+
+func (hMgr *ETCDHttpMgr) CallService(c *engine.Context) error {
+	log.Log.Debug().Interface("server", c.Server).Interface("args", c.Args).Msg("ETCDHttpMgr:CallService")
+	xclient := hMgr.getXclient(c.Server.AppName)
+	if xclient == nil {
+		clog.Log.Error().Str("appName", c.Server.AppName).Interface("req", c.R).Msg("CallServicePath :get service client nil ")
+		return fmt.Errorf("appName:%s,path :%s,CallService xclient nil", c.Server.AppName, c.Server.Path)
+	}
+	hMgr.Proxy.Director = DirectorReq(c.Ctx, c)
+	xclient.SetProxy(hMgr.Proxy)
+	err := xclient.Proxy(c.W, c.R)
+	if errors.Is(err, selector.ErrDebugNoAvailable) {
+		log.Log.Debug().Interface("args", c.Args).Interface("server", c.Server).Msg("CallService:ErrDebugNoAvailable")
+		c.R.Header.Del(constants.RequestUserName)
+		err = xclient.Proxy(c.W, c.R)
+	}
+	if err != nil {
+		clog.Log.Err(err).Str("appName", c.Server.AppName).Interface("args", c.Args).Interface("req", c.R).Msg("CallServicePath:Invoke has err")
+	}
+	return err
 }
