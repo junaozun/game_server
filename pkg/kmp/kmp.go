@@ -81,6 +81,7 @@ func generateNext(p string) []int {
 func TestGO() {
 	go func() {
 		for {
+			panic("xxx")
 			time.Sleep(1 * time.Second)
 			fmt.Println("111")
 		}
