@@ -79,11 +79,12 @@ func generateNext(p string) []int {
 }
 
 func TestGO() {
-	go func() {
+	var a int
+	go func(a int) {
 		for {
 			panic("xxx")
 			time.Sleep(1 * time.Second)
 			fmt.Println("111")
 		}
-	}()
+	}(a)
 }
