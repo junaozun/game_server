@@ -3,6 +3,7 @@ module github.com/junaozun/game_server
 go 1.18
 
 require (
+	github.com/arl/statsviz v0.5.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/forgoer/openssl v1.3.0
 	github.com/gin-gonic/gin v1.8.1
@@ -18,7 +19,6 @@ require (
 
 require (
 	github.com/a8m/envsubst v1.3.0 // indirect
-	github.com/arl/statsviz v0.5.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
