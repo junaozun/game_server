@@ -1,5 +1,10 @@
 package kmp
 
+import (
+	"fmt"
+	"time"
+)
+
 // 基于 KMP 算法实现查找字符串子串函数
 func findSubstring(haystack, needle string) int {
 	// 子串长度=0
@@ -71,4 +76,13 @@ func generateNext(p string) []int {
 		}
 	}
 	return next
+}
+
+func TestGO() {
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			fmt.Println("111")
+		}
+	}()
 }
